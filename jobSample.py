@@ -16,7 +16,7 @@ job1 = {
   'backupDirName': 'logPond', # Dir name for backup log file storage
 
   # logInfo
-  'logCName': '核心toloader应用日志', # 日志中文名称
+  'logCName': '核心tploader应用日志', # 日志中文名称
   'logAbbr': 'core_tploader_app_log', # 日志名称英文缩写 *
   'hostCName': '核心系统tploader主机01', # 主机中文名称
   'hostIP': '192.168.0.20', # 主机IP *
@@ -32,9 +32,8 @@ job1 = {
   'logSaveType': 'Normal', # 日志备份后，存储方式编码，预留，现在还不明确*
   # 日志备份路径  *
   # backupRootDir + backupDirName + sysAbbr + YYYY + MM + DD + hostIP + logAbbr
-  'logSavePath': '/leiw/logManPy/logPond/core/2019/06/02/192.168.0.20/core_tploader_app_log',
+  'logSavePath': None,
   # 'latestBackupFinishDate': datetime.datetime.today() + datetime.timedelta(days=-1), # 最近备份完成时间 *
-
 
   # job date
   'createDate': datetime.datetime.now(),
