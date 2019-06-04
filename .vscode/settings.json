@@ -2,5 +2,25 @@
   "cSpell.words": [
     "leiw",
     "tploader"
-  ]
+  ],
+  "html.format.wrapAttributes": "force-aligned",
+  "editor.wordWrapColumn": 160,
+  "editor.fontSize": 12,
+  "markdown.preview.fontSize": 12,
+  "debug.console.fontSize": 12,
+  "terminal.integrated.fontSize": 12,
+  "rest-client.fontSize": 10,
+  "mssql.resultsFontSize": 11,
+  "pythonPreview.code.fontSize": "13",
+  "pythonPreview.fontSize": 14,
+  "pythonPreview.heapObject.fontSize": 12,
+  "pythonPreview.langDisplay.fontSize": "12",
+  "pythonPreview.pyStdout.fontSize": 10,
+  "pythonPreview.printOutputDocs.fontSize": 10,
+  "pythonPreview.retVal.fontSize": 10,
+  "pythonPreview.stackAndHeapHeader.fontSize": 12,
+  "pythonPreview.stackFrameHeader.fontSize": 12,
+  "markdown.preview.lineHeight": 1.4,
+  "editor.tabSize": 2,
+  "editor.wrappingIndent": "indent"
 }

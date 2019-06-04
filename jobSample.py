@@ -46,21 +46,18 @@ job1 = {
   'isError': False,
 
   # Error Info
-  'errorDesc': [{
-    'errCode': None,
-    'errDesc': None,
-    'errFile': None
-  }],
+  # {
+  #   'errCode': None,
+  #   'errDesc': None,
+  #   'errFile': None
+  # }
+  'errorDescArray': [],
 
   # file info in backup operation
   # info of files which need backup
-  'srcFileInfoArray': [{
-    'name': None,
-    'path': None,
-    'size': None,
-    'createDate': None,
-    'modifyDate': None,
-    'md5sum': None
-  }],
-
+  # {
+  #   'name': None,
+  #   'md5sum': None
+  # }
+  'srcFileInfoArray': [],
 }
