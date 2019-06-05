@@ -2,6 +2,17 @@
 
 import datetime
 
+logManPy = {
+  # host info
+  hostIP: '192.168.0.48',
+  userName: 'voyager',
+  passWord: 'welcome1',
+
+  # logManPy System Info
+  'backupRootDir': '/home/voyager/leiw', # Log Backup Root Dir
+  'backupDirName': 'logPond', # Dir name for backup log file storage
+}
+
 job1 = {
   # ID
   'id': '001',
@@ -10,10 +21,6 @@ job1 = {
   'sysCName': '核心系统', #系统中文名称
   'sysAbbr': 'core', # 系统名称英文缩写
   'sysOSType': 'AIX', # AIX, RHEL, CentOS
-
-  # logManPy System Info
-  'backupRootDir': '/home/voyager/leiw', # Log Backup Root Dir
-  'backupDirName': 'logPond', # Dir name for backup log file storage
 
   # logInfo
   'logCName': '核心tploader应用日志', # 日志中文名称
@@ -32,8 +39,9 @@ job1 = {
   'logSaveType': 'Normal', # 日志备份后，存储方式编码，预留，现在还不明确*
   # 日志备份路径  *
   # backupRootDir + backupDirName + sysAbbr + YYYY + MM + DD + hostIP + logAbbr
-  'logSavePath': None,
+  'logSavePath': '',
   # 'latestBackupFinishDate': datetime.datetime.today() + datetime.timedelta(days=-1), # 最近备份完成时间 *
+  'logSaveZipPassword': 'welcome1', # log zip file password
 
   # job date
   'createDate': datetime.datetime.now(),
