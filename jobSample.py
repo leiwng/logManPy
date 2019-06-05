@@ -4,9 +4,9 @@ import datetime
 
 logManPy = {
   # host info
-  hostIP: '192.168.0.48',
-  userName: 'voyager',
-  passWord: 'welcome1',
+  'hostIP': '192.168.0.48',
+  'userName': 'voyager',
+  'passWord': 'welcome1',
 
   # logManPy System Info
   'backupRootDir': '/home/voyager/leiw', # Log Backup Root Dir
