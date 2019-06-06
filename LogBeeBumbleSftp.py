@@ -39,6 +39,21 @@ def ssh_exec(hostIP, port, userName, password, cmd):
   client.close()
   return outList, errList
 
+def cmd_md5sum(sysOS, logPath, logFilterStr):
+  # different MD5 sum command on AIX and other OS
+  if sysOS == 'AIX' :
+    chkSumCmd = ' csum -h MD5 '
+  else :
+    # RHEL, CentOS, SuSE
+    chkSumCmd = ' md5sum '
+
+  ## 'logNameMatchString' 一定要是最后把年月日解析出来后的，带通配符的文件名
+  cmd = 'find ' + \
+    activeJob['logInfo']['logPath'] + ' -name ' + \
+    '"' + activeJob['logInfo']['logNameMatchString'] + '"' + \
+    ' -type f -maxdepth 1 -exec ' + \
+    chkSumCmd + ' {} \;'
+
 def work_process():
   # compose command to get md5sum
   ## different command on AIX and other OS
