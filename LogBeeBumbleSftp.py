@@ -11,31 +11,37 @@ from jobSample import logManPy
 activeJob = job1
 homeSys = logManPy
 
-client = paramiko.SSHClient()
-client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+def ssh_exec(hostIP, port, userName, password, cmd):
+  try:
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(hostname=hostIP,
+                   port=port,
+                   username=userName,
+                   password=password)
+    ## cmd exec
+    stdin, stdout, stderr = client.exec_command(cmd)
+    outList = stdout.readlines()
+    errList = stderr.readlines()
 
-# SSH2 connecting
-try :
-  client.connect(hostname=activeJob['hostIP'],
-                 username=activeJob['logAccessUser'],
-                 password=activeJob['logAccessPassword'])
+  except Exception as e:
+    print('-= vvv ssh_exec Exception vvv =-')
+    print('str(Exception):\t', str(Exception))
+    print('str(e):\t\t', str(e))
+    print('repr(e):\t', repr(e))
+    print('e.message:\t', e.message)
+    print('traceback.print_exc():', traceback.print_exc())
+    print('traceback.format_exc():\n%s' %traceback.format_exc())
+    print('-= ^^^ END ^^^ =-')
+    client.close()
+    sys.exit(1)
 
-except Exception as e :
-  print('-= vvv SSH Connection Exception vvv =-')
-  print('str(Exception):\t', str(Exception))
-  print('str(e):\t\t', str(e))
-  print('repr(e):\t', repr(e))
-  print('e.message:\t', e.message)
-  print('traceback.print_exc():', traceback.print_exc())
-  print('traceback.format_exc():\n%s' %traceback.format_exc())
-  print('-= ^^^ END ^^^ =-')
-  raise
-  sys.exit(1)
+  client.close()
+  return outList, errList
 
-# Exec command to get md5sum
-try :
-  # get md5sum
-  ## set md5sum command
+def work_process():
+  # compose command to get md5sum
+  ## different command on AIX and other OS
   if activeJob['sysOSType'] == 'AIX' :
     chkSumCmd = ' csum -h MD5 '
   else :
@@ -44,30 +50,29 @@ try :
 
   ## 'logNameMatchString' 一定要是最后把年月日解析出来后的，带通配符的文件名
   cmd = 'find ' + \
-    activeJob['logPath'] + ' -name ' + \
-    '"' + activeJob['logNameMatchString'] + '"' + \
+    activeJob['logInfo']['logPath'] + ' -name ' + \
+    '"' + activeJob['logInfo']['logNameMatchString'] + '"' + \
     ' -type f -maxdepth 1 -exec ' + \
-    chkSumCmd + \
-    ' {} \;'
+    chkSumCmd + ' {} \;'
 
-  ## cmd exec
-  stdin, stdout, stderr = client.exec_command(cmd)
-  # check if have error on exec command
-  errList = stderr.readlines()
+  ## exec command
+  outList, errList = ssh_exec(activeJob['logInfo']['hostIP'],
+                              22,
+                              activeJob['logInfo']['logAccessUser'],
+                              activeJob['logInfo']['logAccessPassword'],
+                              cmd)
   if len(errList) == 0 :
     # no error for command exec
-    outList = stdout.readlines()
     if len(outList) > 0 :
       # cmd exec have output
-      for line in stdout :
+      for line in outList :
         split = re.split(r'[;,\s]\s*', line)
-        activeJob['srcFileInfoArray'].append(
+        activeJob['jobInfo']['srcFileInfoArray'].append(
           {
             'name': split[1],
             'md5sum': split[0]
           }
         )
-
     else :
       # no output from cmd exec, no valid log file be filtered out
       print('-= vvv NO Log file filtered out vvv =-')
@@ -113,4 +118,3 @@ except Exception as e :
   print('-= ^^^ END ^^^ =-')
   raise
   sys.exit(4)
-

@@ -18,54 +18,63 @@ job1 = {
   'id': '001',
 
   # system info
-  'sysCName': '核心系统', #系统中文名称
-  'sysAbbr': 'core', # 系统名称英文缩写
-  'sysOSType': 'AIX', # AIX, RHEL, CentOS
+  'sysInfo': {
+    'sysCName': '核心系统', #系统中文名称
+    'sysAbbr': 'core', # 系统名称英文缩写
+    'sysOSType': 'AIX', # AIX, RHEL, CentOS
+  },
 
   # logInfo
-  'logCName': '核心tploader应用日志', # 日志中文名称
-  'logAbbr': 'core_tploader_app_log', # 日志名称英文缩写 *
-  'hostCName': '核心系统tploader主机01', # 主机中文名称
-  'hostIP': '192.168.0.20', # 主机IP *
-  'logAccessUser': 'voyager', # 用户名 *
-  'logAccessPassword': 'welcome1', # 密码 *
-  'logPath': '/home/voyager/leiw/logManPy/logTest/dailyBackupYesterdaysDateNamedLogZipFile_Bumble', # 日志目录 *
-  'logNameMatchString': 'lz-bank3-2019-06-02-*.log.gz', # 日志文件通配符字串 *
-  'logFormatType': 'text', # 日志格式类型：text， binary *
-  'logDescOfProduceMethod': '在日志归档目录下，日志文件每天进行归档，归档后的文件以年月日命名。',  # 日志文件生成方式描述（中文）
-  'logTypeOfProduceMethod': 'dailyBackupNamedByDate', # 日志文件生成方式编码 *
+  'logInfo': {
+    'logCName': '核心tploader应用日志', # 日志中文名称
+    'logAbbr': 'core_tploader_app_log', # 日志名称英文缩写 *
+    'hostCName': '核心系统tploader主机01', # 主机中文名称
+    'hostIP': '192.168.0.20', # 主机IP *
+    'logAccessUser': 'voyager', # 用户名 *
+    'logAccessPassword': 'welcome1', # 密码 *
+    'logPath': '/home/voyager/leiw/logManPy/logTest/dailyBackupYesterdaysDateNamedLogZipFile_Bumble', # 日志目录 *
+    'logNameMatchString': 'lz-bank3-2019-06-02-*.log.gz', # 日志文件通配符字串 *
+    'logFormatType': 'text', # 日志格式类型：text， binary *
+    'logDescOfProduceMethod': '在日志归档目录下，日志文件每天进行归档，归档后的文件以年月日命名。',  # 日志文件生成方式描述（中文）
+    'logTypeOfProduceMethod': 'dailyBackupNamedByDate', # 日志文件生成方式编码 *
+  },
 
   # logBackupSaveInfo
-  'logSaveType': 'Normal', # 日志备份后，存储方式编码，预留，现在还不明确*
-  # 日志备份路径  *
-  # backupRootDir + backupDirName + sysAbbr + YYYY + MM + DD + hostIP + logAbbr
-  'logSavePath': '',
-  # 'latestBackupFinishDate': datetime.datetime.today() + datetime.timedelta(days=-1), # 最近备份完成时间 *
-  'logSaveZipPassword': 'welcome1', # log zip file password
+  'logBackupSaveInfo': {
+    'logSaveType': 'Normal', # 日志备份后，存储方式编码，预留，现在还不明确*
+    # 日志备份路径  *
+    # backupRootDir + backupDirName + sysAbbr + YYYY + MM + DD + hostIP + logAbbr
+    'logSaveBasePath': '/home/voyager/leiw/logPond/core/2019/06/05',
+    # 'latestBackupFinishDate': datetime.datetime.today() + datetime.timedelta(days=-1), # 最近备份完成时间 *
+    'logSaveZipPassword': 'welcome1', # log zip file password
+  },
 
-  # job date
-  'createDate': datetime.datetime.now(),
-  'startDate': None,
-  'finishDate': None,
+  # job info
+  'jobInfo': {
+    # job date
+    'createDate': datetime.datetime.now(),
+    'startDate': None,
+    'finishDate': None,
 
-  # job status
-  'isStarted': False,
-  'isFinish': False,
-  'isError': False,
+    # job status
+    'isStarted': False,
+    'isFinish': False,
+    'isError': False,
 
-  # Error Info
-  # {
-  #   'errCode': None,
-  #   'errDesc': None,
-  #   'errFile': None
-  # }
-  'errorDescArray': [],
+    # Error Info
+    # {
+    #   'errCode': None,
+    #   'errDesc': None,
+    #   'errFile': None
+    # }
+    'errorDescArray': [],
 
-  # file info in backup operation
-  # info of files which need backup
-  # {
-  #   'name': None,
-  #   'md5sum': None
-  # }
-  'srcFileInfoArray': [],
+    # file info in backup operation
+    # info of files which need backup
+    # {
+    #   'name': None,
+    #   'md5sum': None
+    # }
+    'srcFileInfoArray': [],
+  },
 }
