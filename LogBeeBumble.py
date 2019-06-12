@@ -42,10 +42,10 @@ try :
     # RHEL, CentOS, SuSE
     chkSumCmd = ' md5sum '
 
-  ## 'logNameMatchString' 一定要是最后把年月日解析出来后的，带通配符的文件名
+  ## 'logFileFilterStr' 一定要是最后把年月日解析出来后的，带通配符的文件名
   cmd = 'find ' + \
     activeJob['logPath'] + ' -name ' + \
-    '"' + activeJob['logNameMatchString'] + '"' + \
+    '"' + activeJob['logFileFilterStr'] + '"' + \
     ' -type f -maxdepth 1 -exec ' + \
     chkSumCmd + \
     ' {} \;'
@@ -92,7 +92,7 @@ try :
   # cd /home/voyager/leiw/logManPy/logTest/dailyBackupYesterdaysDateNamedLogZipFile_Bumble;time zip -P welcome1 - *.gz | ssh voyager@192.168.0.48 "cat > /home/voyager/leiw/logManPy/logPond/core/core_app_log.zip"
   cmd = 'cd ' + activeJob['logPath'] + ';' + \
     'time zip -P ' + activeJob['logSaveZipPassword'] + ' - ' + \
-    activeJob['logNameMatchString'] + ' | ssh ' + \
+    activeJob['logFileFilterStr'] + ' | ssh ' + \
     homeSys['userName'] + '@' + homeSys['hostIP'] + ' ' + \
     '"' + 'cat > ' + activeJob['logSaveBasePath'] + os.sep + \
     activeJob['hostIP'] + os.sep + activeJob['core_tploader_app_log'] + \

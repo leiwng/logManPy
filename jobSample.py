@@ -11,6 +11,9 @@ logManPy = {
   # logManPy System Info
   'backupRootDir': '/home/voyager/leiw', # Log Backup Root Dir
   'backupDirName': 'logPond', # Dir name for backup log file storage
+
+  # system const
+  'dirWait4Zip': 'wait4zip',
 }
 
 job1 = {
@@ -32,8 +35,8 @@ job1 = {
     'hostIP': '192.168.0.20', # 主机IP *
     'logAccessUser': 'voyager', # 用户名 *
     'logAccessPassword': 'welcome1', # 密码 *
-    'logPath': '/home/voyager/leiw/logManPy/logTest/dailyBackupYesterdaysDateNamedLogZipFile_Bumble', # 日志目录 *
-    'logNameMatchString': 'lz-bank3-2019-06-02-*.log.gz', # 日志文件通配符字串 *
+    'logDir': '/home/voyager/leiw/logManPy/logTest/dailyBackupYesterdaysDateNamedLogZipFile_Bumble', # 日志目录 *
+    'logFileFilterStr': 'lz-bank3-2019-06-02-*.log.gz', # 日志文件通配符字串 *
     'logFormatType': 'text', # 日志格式类型：text， binary *
     'logDescOfProduceMethod': '在日志归档目录下，日志文件每天进行归档，归档后的文件以年月日命名。',  # 日志文件生成方式描述（中文）
     'logTypeOfProduceMethod': 'dailyBackupNamedByDate', # 日志文件生成方式编码 *
@@ -44,7 +47,7 @@ job1 = {
     'logSaveType': 'Normal', # 日志备份后，存储方式编码，预留，现在还不明确*
     # 日志备份路径  *
     # backupRootDir + backupDirName + sysAbbr + YYYY + MM + DD + hostIP + logAbbr
-    'logSaveBasePath': '/home/voyager/leiw/logPond/core/2019/06/05',
+    'logSaveBaseDir': '/home/voyager/leiw/logPond/core/2019/06/05',
     # 'latestBackupFinishDate': datetime.datetime.today() + datetime.timedelta(days=-1), # 最近备份完成时间 *
     'logSaveZipPassword': 'welcome1', # log zip file password
   },

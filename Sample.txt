@@ -1,0 +1,39 @@
+
+# stat 命令的输出
+$ stat seaf_ext.log
+  File: seaf_ext.log
+  Size: 614             Blocks: 1          IO Block: 65536  regular file
+Device: 9a5f5863h/2589939811d   Inode: 2533274790432863  Links: 1
+Access: (0644/-rw-r--r--)  Uid: (197609/   leiwn)   Gid: (197609/ UNKNOWN)
+Access: 2018-06-28 21:54:26.134372800 +0800
+Modify: 2018-06-28 21:54:27.004748200 +0800
+Change: 2018-06-28 21:54:27.004748200 +0800
+ Birth: 2018-06-28 21:54:26.134372800 +0800
+
+leiwng@LeiWangOrientLP001:~$ stat .bashrc
+  File: .bashrc
+  Size: 3771            Blocks: 8          IO Block: 4096   regular file
+Device: 2h/2d   Inode: 1970324837815199  Links: 1
+Access: (0644/-rw-r--r--)  Uid: ( 1000/  leiwng)   Gid: ( 1000/  leiwng)
+Access: 2018-09-20 13:31:42.596030000 +0800
+Modify: 2018-09-20 13:31:42.597023700 +0800
+Change: 2018-09-20 13:31:42.598015600 +0800
+ Birth: -
+
+$ stat *
+  File: 「开始」菜单 -> /c/Users/leiwn/AppData/Roaming/Microsoft/Windows/Start Menu
+  Size: 59              Blocks: 0          IO Block: 65536  symbolic link
+Device: 9a5f5863h/2589939811d   Inode: 2814749767577296  Links: 1
+Access: (0777/lrwxrwxrwx)  Uid: (197609/   leiwn)   Gid: (197609/ UNKNOWN)
+Access: 2018-06-01 10:40:33.897552000 +0800
+Modify: 2018-06-01 10:40:33.897552000 +0800
+Change: 2018-06-01 10:40:33.897552000 +0800
+ Birth: 2018-06-01 10:40:33.897552000 +0800
+  File: 3D Objects
+  Size: 0               Blocks: 0          IO Block: 65536  directory
+Device: 9a5f5863h/2589939811d   Inode: 3096224743894504  Links: 1
+Access: (0755/drwxr-xr-x)  Uid: (197609/   leiwn)   Gid: (197609/ UNKNOWN)
+Access: 2018-01-01 21:27:02.256027800 +0800
+Modify: 2018-12-18 11:06:44.852859300 +0800
+Change: 2018-12-18 11:06:44.852859300 +0800
+ Birth: 2018-01-01 21:27:02.256027800 +0800

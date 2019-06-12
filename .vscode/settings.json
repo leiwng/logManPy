@@ -3,6 +3,8 @@
     "csum",
     "leiw",
     "paramiko",
+    "sftp",
+    "strptime",
     "tploader"
   ],
   "html.format.wrapAttributes": "force-aligned",
