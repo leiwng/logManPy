@@ -71,7 +71,6 @@ def get_date_from_line(line) :
   else :
     lineDate = None
 
-
   return lineDate
 
 
@@ -350,7 +349,7 @@ def main_proc() :
         if rFileInfo['md5sum'] != lFileInfo['md5sum'] :
           # ERROR PANIC
           print('-= vvv Func: main_proc Error vvv =-')
-          print('Error Desc: MD5Sum check meet error.')
+          print('Error Desc: MD5Sum not equal between remote file and downloaded local file.')
           print('hostIP: ', hostIP)
           print('Remote File : ', rFileInfo['path'])
           print('Remote File MD5Sum: ', rFileInfo['md5sum'])
