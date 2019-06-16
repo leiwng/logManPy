@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import datetime
+from datetime import datetime
 
 logManPy = {
   # host info
@@ -16,10 +16,10 @@ logManPy = {
   'dirWait4Zip': 'wait4zip',
 
   # file name for MD5Sum check file
-  'fileNameOfFileProperty': 'ort_file_property.txt'
+  'fileNameOfFileProperty': 'ort_file_property.txt',
 
   # log zip file name
-  'logZipFileName' = 'logBackup.zip'
+  'logZipFileName' = 'logBackup.zip',
 }
 
 job1 = {
@@ -54,14 +54,14 @@ job1 = {
     # 日志备份路径  *
     # backupRootDir + backupDirName + sysAbbr + YYYY + MM + DD + hostIP + logAbbr
     'logSaveBaseDir': '/home/voyager/leiw/logPond/core/2019/06/05',
-    # 'latestBackupFinishDate': datetime.datetime.today() + datetime.timedelta(days=-1), # 最近备份完成时间 *
+    # 'latestBackupFinishDate': datetime.today() + datetime.timedelta(days=-1), # 最近备份完成时间 *
     'logSaveZipPassword': 'welcome1', # log zip file password
   },
 
   # job info
   'jobInfo': {
     # job date
-    'createDate': datetime.datetime.now(),
+    'createDate': datetime.now(),
     'startDate': None,
     'finishDate': None,
 
