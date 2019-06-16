@@ -5,6 +5,8 @@ import sys
 import os
 import traceback
 import re
+import subprocess
+
 from jobSample import job1
 from jobSample import logManPy
 from datetime import datetime
@@ -74,7 +76,7 @@ def get_date_from_line(line) :
   return lineDate
 
 
-def get_remote_file_stat_Info(hostIP, port, userName, password, remoteDir, fileNameFilterStr) :
+def get_remote_file_size_date_Info(hostIP, port, userName, password, remoteDir, fileNameFilterStr) :
 
   fileBirthDate = None
   fileChgDate = None
@@ -162,20 +164,20 @@ def sftp_file_download(hostIP, port, user, password, remoteDir, localTmpDir, rem
 
     localFileList = os.listdir(localTmpDir)
 
-    for aFile in remoteFileInfoList :
+    for rFile in remoteFileInfoList :
       # start to transfer files one by one
 
-      if aFile['name'] in localFileList :
+      if rFile['name'] in localFileList :
 
         # the file for transfer already in local dir
-        localRxFilePath = localTmpDir + os.path.sep + aFile['name']
+        localRxFilePath = localTmpDir + os.path.sep + rFile['name']
         localRxFileSize = os.path.getsize(localRxFilePath)
 
-        if localRxFileSize < aFile['size'] :
+        if localRxFileSize < rFile['size'] :
           # file transfer halted before, now resume
           localRxFile = open(localRxFilePath, 'a')
 
-          remoteTxFilePath = aFile['path']
+          remoteTxFilePath = rFile['path']
           remoteTxFile = sftp.open(remoteTxFilePath, 'r')
           remoteTxFile.seek(localRxFileSize)
 
@@ -192,10 +194,10 @@ def sftp_file_download(hostIP, port, user, password, remoteDir, localTmpDir, rem
 
       else :
         # the file is new, not in local Rx folder
-        localRxFilePath = localTmpDir + os.path.sep + aFile['name']
+        localRxFilePath = localTmpDir + os.path.sep + rFile['name']
         localRxFile = open(localRxFilePath, 'w')
 
-        remoteTxFilePath = aFile['path']
+        remoteTxFilePath = rFile['path']
         remoteTxFile = sftp.open(remoteTxFilePath, 'r')
 
         tmpBuffer = remoteTxFile.read(1024 * 1024)
@@ -207,11 +209,14 @@ def sftp_file_download(hostIP, port, user, password, remoteDir, localTmpDir, rem
         localRxFile.flush()
         localRxFile.close()
 
+    sftp.close()
+    t.close()
+
   except Exception as e :
     print('-= vvv Func: sftp_file_download Exception vvv =-')
     print('Exception Desc: Exception when create local dir for storing sftp files')
     print('hostIP: ', hostIP)
-    print('cmlocalSftpLandDird: ', localTmpDir)
+    print('localDownloadWait4ZipDir: ', localTmpDir)
     print('str(Exception):\t', str(Exception))
     print('str(e):\t\t', str(e))
     print('repr(e):\t', repr(e))
@@ -307,6 +312,55 @@ def get_local_files_md5sum(tmpDirWait4Zip, fileNameFilterStr) :
   return fileMD5SumList
 
 
+def write_dict_array_to_local_file(dictArray, dictArrayName, fileFullPath) :
+
+  #Write Array of dict to file
+
+  # open file
+  if os.path.exists(fileFullPath) :
+    f = open(fileFullPath, 'a')
+  else :
+    localDir = os.path.dirname(fileFullPath)
+    if not os.path.exists(localDir) :
+      os.makedirs(localDir)
+    else :
+      pass
+    f = open(fileFullPath, 'w')
+
+  # write dict to file line by line
+  f.writelines(os.linesep)
+  f.writelines(' ###  ' + str(datetime.now()) + '  ###')
+  f.writelines(' >>>  ' + dictArrayName + '  <<<')
+  lineCnt = 1
+  for aDict in dictArray :
+    f.write(str(lineCnt) + ' : ')
+    f.writelines(str(aDict))
+  f.writelines(' ^^^  END  ^^^ ')
+
+  # close file
+  f.close
+
+
+def zip_local_file(localLogDir, pwd, zipFileName, dirWait4Zip) :
+
+  # use os command to zip local file
+  cmd = 'cd ' + localLogDir + ';' + 'zip -P ' + pwd + ' -r -m ' + zipFileName + ' ' + dirWait4Zip
+
+  rtCode, cmdOutput = subprocess.getstatusoutput(cmd)
+
+  if rtCode != 0 :
+    # command exec fail
+    print('-= vvv Func: zip_local_file Error vvv =-')
+    print('Error Desc: zip local log file failure')
+    print('cmd: ', cmd)
+    print('Error Msg: ', cmdOutput)
+    print('traceback.print_exc():', traceback.print_exc())
+    print('traceback.format_exc():\n%s' %traceback.format_exc())
+    print('-= ^^^ END ^^^ =-')
+    sys.exit(100)
+  else :
+    pass
+
 
 def main_proc() :
 
@@ -325,7 +379,7 @@ def main_proc() :
   remoteFileMD5SumList = get_remote_files_md5sum(sysOS, logDir, logNameFilterStr, hostIP, port, user, pwd)
 
   # [{name, size, aTime, mTime, cTime, bTime}, ...]
-  remoteFileInfoList = get_remote_file_stat_Info(hostIP, port, user, pwd, logDir, logNameFilterStr)
+  remoteFileInfoList = get_remote_file_size_date_Info(hostIP, port, user, pwd, logDir, logNameFilterStr)
 
   # [{name, size, aTime, mTime, cTime, bTime, dir, path, md5sum}, ...]
   remoteMergedFileInfoList = []
@@ -341,6 +395,11 @@ def main_proc() :
 
   # check Tx file md5sum
   localFileMD5SumList = get_local_files_md5sum(logLocalTmpDir, logNameFilterStr)
+
+  # save file property to file
+  fileNameOfFileProperty = logLocalTmpDir + os.path.sep + homeSys['fileNameOfFileProperty']
+  write_dict_array_to_local_file(remoteMergedFileInfoList, 'RemoteFiles', fileNameOfFileProperty)
+  write_dict_array_to_local_file(localFileMD5SumList, 'Local Files', fileNameOfFileProperty)
 
   # check md5sum between remote and local
   for rFileInfo in remoteMergedFileInfoList :
@@ -364,3 +423,10 @@ def main_proc() :
           break
 
   # Zip local files
+  logStoreDir = activeJob['logBackupSaveInfo']['logSaveBaseDir']
+  pwd = activeJob['logBackupSaveInfo']['logSaveZipPassword']
+  zipFileName = homeSys['logZipFileName']
+  wait4zipDirName = homeSys['dirWait4Zip']
+  zip_local_file(logStoreDir, pwd, zipFileName, wait4zipDirName)
+
+  return 0

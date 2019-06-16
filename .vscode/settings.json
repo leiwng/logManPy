@@ -3,6 +3,7 @@
     "csum",
     "leiw",
     "paramiko",
+    "popen",
     "sftp",
     "strptime",
     "tploader"

@@ -14,6 +14,12 @@ logManPy = {
 
   # system const
   'dirWait4Zip': 'wait4zip',
+
+  # file name for MD5Sum check file
+  'fileNameOfFileProperty': 'ort_file_property.txt'
+
+  # log zip file name
+  'logZipFileName' = 'logBackup.zip'
 }
 
 job1 = {
