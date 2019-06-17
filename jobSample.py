@@ -3,6 +3,7 @@
 from datetime import datetime
 
 logManPy = {
+
   # host info
   'hostIP': '192.168.0.48',
   'userName': 'voyager',
@@ -19,7 +20,7 @@ logManPy = {
   'fileNameOfFileProperty': 'ort_file_property.txt',
 
   # log zip file name
-  'logZipFileName' = 'logBackup.zip',
+  'logZipFileName': 'logBackup.zip',
 }
 
 job1 = {
