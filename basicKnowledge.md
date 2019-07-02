@@ -5,4 +5,3 @@ from datetime import datetime
 
 print(datetime.fromtimestamp(1555428240123/1000).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
 ```
-

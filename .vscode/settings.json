@@ -27,5 +27,6 @@
   "pythonPreview.stackFrameHeader.fontSize": 12,
   "markdown.preview.lineHeight": 1.4,
   "editor.tabSize": 2,
-  "editor.wrappingIndent": "indent"
+  "editor.wrappingIndent": "indent",
+  "python.pythonPath": "C:\\Users\\leiwn\\.virtualenvs\\logManPy-RBPnyOqm\\Scripts\\python.exe"
 }

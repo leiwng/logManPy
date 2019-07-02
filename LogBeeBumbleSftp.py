@@ -6,10 +6,11 @@ import os
 import traceback
 import re
 import subprocess
+from datetime import datetime
 
 from jobSample import job1
 from jobSample import logManPy
-from datetime import datetime
+
 
 activeJob = job1
 homeSys = logManPy
