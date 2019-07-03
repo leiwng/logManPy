@@ -1,11 +1,25 @@
 # -*- coding: utf-8 -*-
 
 conalogMongo = {
+  'host': '192.168.0.148',
+  'port': 27017,
+  'user': '',
+  'password': '',
+  'dbName': 'conalog',
+  'collectorCollName': 'collector',
+  'certCollName': 'cert',
+}
+
+logmanpyMongo = {
   'host': '192.168.0.48',
   'port': 27017,
-  'user': 'voyager',
-  'password': 'welcome1',
-  'dbName': 'conalog',
+  'user': '',
+  'password': '',
+  'dbName': 'logmanpy',
+  'sysInfoCollName': 'sysinfo',
+  'logInfoCollName': 'loginfo',
+  'logSaveInfoCollName': 'logsaveinfo',
+  'logJobInfoCollName': 'logjobinfo'
 }
 
 collectorSample1 = {
@@ -44,3 +58,7 @@ certSample1 = {
 	"pass" : "aaa123",
 	"ts" : "1556429325333"
 }
+
+nameSample1 = 'core_oracle_trace_13'
+nameSample2 = 'tploader218'
+nameSample3 = 'hxdb_load_log_11'

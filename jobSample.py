@@ -29,16 +29,16 @@ job1 = {
 
   # system info
   'sysInfo': {
-    'sysCName': '核心系统', #系统中文名称
+    'sysName': '核心系统', #系统中文名称
     'sysAbbr': 'core', # 系统名称英文缩写
-    'sysOSType': 'AIX', # AIX, RHEL, CentOS
+    'sysOS': 'AIX', # AIX, Linux (RHEL, CentOS)
   },
 
   # logInfo
   'logInfo': {
-    'logCName': '核心tploader应用日志', # 日志中文名称
+    'logName': '核心tploader应用日志', # 日志中文名称
     'logAbbr': 'core_tploader_app_log', # 日志名称英文缩写 *
-    'hostCName': '核心系统tploader主机01', # 主机中文名称
+    'hostName': '核心系统tploader主机01', # 主机中文名称
     'hostIP': '192.168.0.20', # 主机IP *
     'logAccessUser': 'voyager', # 用户名 *
     'logAccessPassword': 'welcome1', # 密码 *
@@ -53,7 +53,7 @@ job1 = {
   'logBackupSaveInfo': {
     'logSaveType': 'Normal', # 日志备份后，存储方式编码，预留，现在还不明确*
     # 日志备份路径  *
-    # backupRootDir + backupDirName + sysAbbr + YYYY + MM + DD + hostIP + logAbbr
+    # backupRootDir + backupDirName + abbr + YYYY + MM + DD + hostIP + logAbbr
     'logSaveBaseDir': '/home/voyager/leiw/logPond/core/2019/06/05',
     # 'latestBackupFinishDate': datetime.today() + datetime.timedelta(days=-1), # 最近备份完成时间 *
     'logSaveZipPassword': 'welcome1', # log zip file password
