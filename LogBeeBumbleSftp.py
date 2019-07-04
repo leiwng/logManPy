@@ -7,13 +7,10 @@ import traceback
 import re
 import subprocess
 from datetime import datetime
+import config as cfg
 
-from jobSample import job1
-from jobSample import logManPy
-
-
-activeJob = job1
-homeSys = logManPy
+activeJob = cfg.job1
+homeSys = cfg.logManPy
 
 
 def ssh_exec(hostIP, port, userName, password, cmd):

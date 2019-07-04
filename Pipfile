@@ -9,6 +9,7 @@ verify_ssl = true
 paramiko = "*"
 pylint = "*"
 pymongo = "*"
+traceback = "*"
 
 [requires]
 python_version = "3.7"

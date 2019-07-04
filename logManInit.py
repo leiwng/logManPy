@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import pymongo
+from bson import ObjectId
 import config as cfg
 import re
-from bson.objectid import ObjectId
 import traceback
+import os
 
 # connect to mongodb
 def mongoConn(connCfg) :
@@ -21,12 +22,12 @@ def mongoConn(connCfg) :
     sepStr1 = ''
     sepStr2 = ''
 
-  connStr = 'mongodb://' + user + sepStr1 + pwd + sepStr2 + host + ':' + port + '/'
+  connStr = 'mongodb://' + user + sepStr1 + pwd + sepStr2 + host + ':' + str(port) + '/'
   conn = pymongo.MongoClient(connStr)
 
   return conn
 
-def gatherLogInfo(collector, dbConalog, certInfo) :
+def gatherLogInfo(collector, dbConalog, cert) :
 
   # gather info for sysInfo
   sysInfo = {}
@@ -35,8 +36,8 @@ def gatherLogInfo(collector, dbConalog, certInfo) :
   sysAbbr = re.match(reExp, collectorName)
   if sysAbbr :
 
-    sysInfo['sysAbbr'] = sysAbbr
-    sysInfo['sysName'] = sysAbbr
+    sysInfo['sysAbbr'] = sysAbbr.group()
+    sysInfo['sysName'] = sysAbbr.group()
 
     if collector['type'] == 'FileTail' or collector['cmd'].replace(' ', '') == 'tail-F' :
       sysInfo['sysOS'] = 'Linux'
@@ -52,31 +53,50 @@ def gatherLogInfo(collector, dbConalog, certInfo) :
     print('-= ^^^ END ^^^ =-')
     return -1
 
-  logoInfo = {}
-  logoInfo['logName'] = collectorName
-  logoInfo['logAbbr'] = collectorName
-  logoInfo['hostName'] = collectorName
-  logoInfo['hostIP'] = certInfo['']
+  logInfo = {}
+  logInfo['logName'] = collectorName
+  logInfo['logAbbr'] = collectorName
+  logInfo['hostName'] = collectorName
+  logInfo['hostIP'] = cert['host']
+  logInfo['sshPort'] = cert['port']
+  logInfo['logAccessUser'] = cert['user']
+  logInfo['logAccessPassword'] = cert['pass']
+  (logInfo['logDir'], logInfo['logFileFilterStr']) = os.path.split(collector['param'])
+  logInfo['logFormatType'] = 'text'
+  logInfo['logDescOfProduceMethod'] = 'Get from Conalog'
+  logInfo['logTypeOfProduceMethod'] = 'getFromConalog'
 
-  coll = dbConalog['']
+  # data(sysInfo and logInfo) are ready, now save to db
+  logManPyConn = mongoConn(cfg.logManPyMongo)
+  tmpDBName = cfg.logManPyMongo['dbName']
+  dbLogManPy = logManPyConn[tmpDBName]
 
-  logoInfo['hostIP'] = collector['']
+  tmpCollName = cfg.logManPyMongo['sysInfoCollName']
+  sysInfoColl = dbLogManPy[tmpCollName]
 
+  # print(sysInfo)
+  tmpDocID = sysInfoColl.insert_one(sysInfo)
+  logInfo['sysID'] = tmpDocID.inserted_id
 
+  tmpCollName = cfg.logManPyMongo['logInfoCollName']
+  logInfoColl = dbLogManPy[tmpCollName]
+  tmpDocID = logInfoColl.insert_one(logInfo)
+
+  return 0
 
 # gather LogInfo for system and host
 def mainProc() :
 
   conn = mongoConn(cfg.conalogMongo)
 
-  dbName = cfg.conalogMongo['dbName']
-  dbConalog = conn[dbName]
+  tmpDBName = cfg.conalogMongo['dbName']
+  dbConalog = conn[tmpDBName]
 
-  collName = cfg.conalogMongo['collectorCollName']
-  collectorColl = dbConalog[collName]
+  tmpCollName = cfg.conalogMongo['collectorCollName']
+  collectorColl = dbConalog[tmpCollName]
 
-  collName = cfg.conalogMongo['certCollName']
-  certColl = dbConalog[collName]
+  tmpCollName = cfg.conalogMongo['certCollName']
+  certColl = dbConalog[tmpCollName]
 
   collectors = collectorColl.find({'category':'passive'})
   if collectors :
@@ -89,13 +109,13 @@ def mainProc() :
 
         certInfo = {}
         for cert in certs :
-          certInfo['hostIP'] = cert['host']
-          certInfo['port'] = cert['port']
-          certInfo['user'] = cert['user']
-          certInfo['password'] = cert['pass']
+          # certInfo['hostIP'] = cert['host']
+          # certInfo['port'] = cert['port']
+          # certInfo['user'] = cert['user']
+          # certInfo['password'] = cert['pass']
+          gatherLogInfo(collector, dbConalog, cert)
           break
 
-        gatherLogInfo(collector, dbConalog, certInfo)
 
       else :
         pass
@@ -103,3 +123,7 @@ def mainProc() :
   else :
     pass
 
+
+if __name__=="__main__" :
+
+  mainProc()
