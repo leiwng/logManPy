@@ -1,10 +1,18 @@
 # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
+"""
+  :Purpose: config file for logManPy system.
+  :author: Lei.Wang,
+  :copyright: Orientsoft Co., Ltd.
+"""
+
 
 from bson.objectid import ObjectId
 from datetime import datetime
 
-logManPy = {
 
+
+logManPy = {
   # host info
   'hostIP': '192.168.0.48',
   'userName': 'voyager',
@@ -15,7 +23,7 @@ logManPy = {
   'backupDirName': 'logPond', # Dir name for backup log file storage
 
   # system const
-  'dirWait4Zip': 'wait4zip',
+  'wait4ZipDir': 'wait4zip',
 
   # file name for MD5Sum check file
   'fileNameOfFileProperty': 'ort_file_property.txt',
@@ -27,9 +35,42 @@ logManPy = {
   'logSaveCommonZipPassword': 'welcome1'
 }
 
+# system info
+sysInfoColl = {
+  'sysName': '核心系统', #系统中文名称
+  'sysAbbr': 'core', # 系统名称英文缩写
+  'sysOS': 'AIX', # AIX, Linux (RHEL, CentOS)
+}
+
+# logInfo
+logInfoColl = {
+  'state': 'maintain', # 当前logInfo的状态： 'maintain' 'available'
+  'sysID': 'system object id',
+  'certID': 'ObjectID of cert',
+  'logName': '核心tploader应用日志', # 日志中文名称
+  'logAbbr': 'core_tploader_app_log', # 日志名称英文缩写 *
+  'hostName': '核心系统tploader主机01', # 主机中文名称
+  'logDir': '/home/voyager/leiw/logManPy/logTest/dailyBackupYesterdaysDateNamedLogZipFile_Bumble', # 日志目录 *
+  'logFileFilterStr': 'lz-bank3-2019-06-02-*.log.gz', # 日志文件通配符字串 *
+  'logFormatType': 'text', # 日志格式类型：text， binary *
+  'logDescOfProduceMethod': '在日志归档目录下，日志文件每天进行归档，归档后的文件以年月日命名。',  # 日志文件生成方式描述（中文）
+  'logTypeOfProduceMethod': 'dailyBackupNamedByDate', # 日志文件生成方式编码 *
+  'logSaveZipPassword': 'welcome1', # log zip file password
+}
+
+# cert info collection
+certColl = {
+  "host" : "127.0.0.1",
+  "port" : "22",
+  "user" : "voyager",
+  "pass" : "aaa123",
+}
+
 job1 = {
-  # ID
-  'id': '001',
+
+  # logs completed in which day to backup
+  # The Rule is to backup yesterday's logs in today
+  'logDate4Backup': '',
 
   # system info
   'sysInfo': {
@@ -40,58 +81,55 @@ job1 = {
 
   # logInfo
   'logInfo': {
+    'state': 'maintain', # 当前logInfo的状态： 'maintain' 'available'
     'sysID': 'system object id',
     'logName': '核心tploader应用日志', # 日志中文名称
     'logAbbr': 'core_tploader_app_log', # 日志名称英文缩写 *
     'hostName': '核心系统tploader主机01', # 主机中文名称
-    'certID': 'ObjectID of cert',
-    # 'hostIP': '192.168.0.20', # 主机IP *
-    # 'sshPort': '22',
-    # 'logAccessUser': 'voyager', # 用户名 *
-    # 'logAccessPassword': 'welcome1', # 密码 *
+
+    'cert': {
+      "host" : "127.0.0.1",
+      "port" : "22",
+      "user" : "voyager",
+      "pass" : "aaa123",
+    },
+
     'logDir': '/home/voyager/leiw/logManPy/logTest/dailyBackupYesterdaysDateNamedLogZipFile_Bumble', # 日志目录 *
     'logFileFilterStr': 'lz-bank3-2019-06-02-*.log.gz', # 日志文件通配符字串 *
     'logFormatType': 'text', # 日志格式类型：text， binary *
     'logDescOfProduceMethod': '在日志归档目录下，日志文件每天进行归档，归档后的文件以年月日命名。',  # 日志文件生成方式描述（中文）
     'logTypeOfProduceMethod': 'dailyBackupNamedByDate', # 日志文件生成方式编码 *
-  },
-
-  'cert': {
-    "host" : "127.0.0.1",
-    "port" : "22",
-    "user" : "voyager",
-    "pass" : "aaa123",
+    'logSaveZipPassword': 'welcome1', # log zip file password
   },
 
   # logBackupSaveInfo
   'logBackupSaveInfo': {
-    'logSaveType': 'Normal', # 日志备份后，存储方式编码，预留，现在还不明确*
+    'logSaveType': 'normal', # 日志备份后，存储方式编码，预留，现在还不明确*
     # 日志备份路径  *
     # backupRootDir + backupDirName + abbr + YYYY + MM + DD + hostIP + logAbbr
     'logSaveBaseDir': '/home/voyager/leiw/logPond/core/2019/06/05',
     # 'latestBackupFinishDate': datetime.today() + datetime.timedelta(days=-1), # 最近备份完成时间 *
-    'logSaveZipPassword': 'welcome1', # log zip file password
   },
 
-  # job info
-  'jobInfo': {
+  # job status
+  'jobStatus': {
     # job date
-    'createDate': datetime.now(),
-    'startDate': None,
-    'finishDate': None,
+    'createTime': None,
+    'startTime': None,
+    'finishTime': None,
+    'errorTime': None,
 
     # job status
-    'isStarted': False,
-    'isFinish': False,
-    'isError': False,
+    'state': 'started', # 'ready', 'started', 'finish', 'error'
 
     # Error Info
-    # {
-    #   'errCode': None,
-    #   'errDesc': None,
-    #   'errFile': None
-    # }
-    'errorDescArray': [],
+    'errors': [
+      {
+        'errCode': '',
+        'errDesc': '',
+        'errFileInfo': '',
+      }
+    ],
 
     # file info in backup operation
     # info of files which need backup
@@ -121,8 +159,8 @@ logManPyMongo = {
   'dbName': 'logManPy',
   'sysInfoCollName': 'sysInfo',
   'logInfoCollName': 'logInfo',
-  'logSaveInfoCollName': 'logSaveInfo',
-  'logJobInfoCollName': 'logJobInfo'
+  'logJobInfoCollName': 'logJobInfo',
+  'certCollName': 'cert',
 }
 
 collectorSample1 = {

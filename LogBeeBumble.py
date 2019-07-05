@@ -13,6 +13,7 @@ import traceback
 import re
 import subprocess
 from datetime import datetime
+
 import config as cfg
 
 
@@ -290,10 +291,10 @@ def get_remote_files_md5sum(sysOS, logDir, logNameFilterStr, hostIP, port, user,
 
 
 # get downloaded local file md5sum
-def get_local_files_md5sum(tmpDirWait4Zip, fileNameFilterStr) :
+def get_local_files_md5sum(tmpwait4ZipDir, fileNameFilterStr) :
 
   # exec md5sum command
-  cmd = 'md5sum ' + tmpDirWait4Zip + os.path.sep + fileNameFilterStr
+  cmd = 'md5sum ' + tmpwait4ZipDir + os.path.sep + fileNameFilterStr
   result = os.popen(cmd, 'r')
   resultList = result.readlines()
 
@@ -348,10 +349,10 @@ def write_dict_array_to_local_file(dictArray, dictArrayName, fileFullPath) :
 
 
 # zip downloaded local log file
-def zip_local_file(localLogDir, pwd, zipFileName, dirWait4Zip) :
+def zip_local_file(localLogDir, zipPassword, zipFileName, wait4ZipDir) :
 
   # use os command to zip local file
-  cmd = 'cd ' + localLogDir + ';' + 'zip -P ' + pwd + ' -r -m ' + zipFileName + ' ' + dirWait4Zip
+  cmd = 'cd ' + localLogDir + ';' + 'zip -P ' + zipPassword + ' -r -m ' + zipFileName + ' ' + wait4ZipDir
 
   rtCode, cmdOutput = subprocess.getstatusoutput(cmd)
 
@@ -370,17 +371,17 @@ def zip_local_file(localLogDir, pwd, zipFileName, dirWait4Zip) :
 
 
 # main process function for backup log from one single backup job
-def main_proc(activeJob, homeSys) :
+def main_proc(newJob, homeSys) :
 
-  sysOS = activeJob['sysInfo']['sysOSType']
-  logDir = activeJob['logInfo']['logDir']
-  logNameFilterStr = activeJob['logInfo']['logFileFilterStr']
-  hostIP = activeJob['logInfo']['hostIP']
-  port = 22
-  user = activeJob['logInfo']['logAccessUser']
-  pwd = activeJob['logInfo']['logAccessPassword']
-  logLocalDir = activeJob['logBackupSaveInfo']['logSaveBaseDir']
-  logLocalTmpDir = logLocalDir + os.path.sep + homeSys['dirWait4Zip']
+  sysOS = newJob['sysInfo']['sysOS']
+  logDir = newJob['logInfo']['logDir']
+  logNameFilterStr = newJob['logInfo']['logFileFilterStr']
+  hostIP = newJob['logInfo']['cert']['host']
+  port = newJob['logInfo']['cert']['port']
+  user = newJob['logInfo']['cert']['user']
+  pwd = newJob['logInfo']['cert']['pass']
+  logLocalDir = newJob['logBackupSaveInfo']['logSaveBaseDir']
+  logLocalTmpDir = logLocalDir + os.path.sep + homeSys['wait4ZipDir']
 
   # get md5sum Info of files
   # [{name, dir, path, md5sum}, ... ]
@@ -431,18 +432,18 @@ def main_proc(activeJob, homeSys) :
           break
 
   # Zip local files
-  logStoreDir = activeJob['logBackupSaveInfo']['logSaveBaseDir']
-  pwd = activeJob['logBackupSaveInfo']['logSaveZipPassword']
+  logStoreDir = newJob['logBackupSaveInfo']['logSaveBaseDir']
+  zipPassword = newJob['logInfo']['logSaveZipPassword']
   zipFileName = homeSys['logZipFileName']
-  wait4zipDirName = homeSys['dirWait4Zip']
-  zip_local_file(logStoreDir, pwd, zipFileName, wait4zipDirName)
+  wait4zipDirName = homeSys['wait4ZipDir']
+  zip_local_file(logStoreDir, zipPassword, zipFileName, wait4zipDirName)
 
   return 0
 
 
 if __name__=="__main__" :
 
-  activeJob = cfg.job1
+  newJob = cfg.job1
   homeSys = cfg.logManPy
 
-  main_proc(activeJob, homeSys)
+  main_proc(newJob, homeSys)

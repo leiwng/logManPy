@@ -8,31 +8,12 @@
 
 import pymongo
 from bson import ObjectId
-import config as cfg
 import re
 import traceback
 import os
 
-
-# connect to mongodb
-def mongoConn(connCfg) :
-
-  user = connCfg['user']
-  pwd = connCfg['password']
-  host = connCfg['host']
-  port = connCfg['port']
-
-  if user :
-    sepStr1 = ':'
-    sepStr2 = '@'
-  else :
-    sepStr1 = ''
-    sepStr2 = ''
-
-  connStr = 'mongodb://' + user + sepStr1 + pwd + sepStr2 + host + ':' + str(port) + '/'
-  conn = pymongo.MongoClient(connStr)
-
-  return conn
+import config as cfg
+import commonAPI as cAPI
 
 
 # gather log info from Conalog Mongo DB
@@ -66,27 +47,34 @@ def gatherLogInfo(collector, dbConalog, cert) :
   logInfo['logName'] = collectorName
   logInfo['logAbbr'] = collectorName
   logInfo['hostName'] = collectorName
-  logInfo['hostIP'] = cert['host']
-  logInfo['sshPort'] = cert['port']
-  logInfo['logAccessUser'] = cert['user']
-  logInfo['logAccessPassword'] = cert['pass']
   (logInfo['logDir'], logInfo['logFileFilterStr']) = os.path.split(collector['param'])
   logInfo['logFormatType'] = 'text'
   # temporary set to 'getFromConalog' need configuration manually later
   logInfo['logDescOfProduceMethod'] = 'Get from Conalog'
   logInfo['logTypeOfProduceMethod'] = 'getFromConalog'
+  # this log info is just created, need update later for above info
+  logInfo['state'] = 'maintain'
+  logInfo['logSaveZipPassword'] = 'welcome1'
 
   # data(sysInfo and logInfo) are ready, now save to db
-  logManPyConn = mongoConn(cfg.logManPyMongo)
+  logManPyConn = cAPI.mongoConn(cfg.logManPyMongo)
   tmpDBName = cfg.logManPyMongo['dbName']
   dbLogManPy = logManPyConn[tmpDBName]
 
   tmpCollName = cfg.logManPyMongo['sysInfoCollName']
   sysInfoColl = dbLogManPy[tmpCollName]
 
-  # print(sysInfo)
+  # save system info to DB
   tmpDocID = sysInfoColl.insert_one(sysInfo)
+  # fill back sysID to Log Info
   logInfo['sysID'] = tmpDocID.inserted_id
+
+  tmpCollName = cfg.logManPyMongo['certCollName']
+  certColl = dbLogManPy[tmpCollName]
+  # save cert info to DB
+  tmpDocID = certColl.insert_one(cert)
+  # fill back certID to Log Info
+  logInfo['certID'] = tmpDocID.inserted_id
 
   tmpCollName = cfg.logManPyMongo['logInfoCollName']
   logInfoColl = dbLogManPy[tmpCollName]
@@ -98,7 +86,7 @@ def gatherLogInfo(collector, dbConalog, cert) :
 # gather LogInfo for system and host
 def mainProc() :
 
-  conn = mongoConn(cfg.conalogMongo)
+  conn = cAPI.mongoConn(cfg.conalogMongo)
 
   tmpDBName = cfg.conalogMongo['dbName']
   dbConalog = conn[tmpDBName]
@@ -115,19 +103,9 @@ def mainProc() :
     for collector in collectors :
 
       # get find cert coll to get host, user, password
-      certs = certColl.find({'_id': ObjectId(collector['host'])})
-      if certs :
-
-        certInfo = {}
-        for cert in certs :
-          # certInfo['hostIP'] = cert['host']
-          # certInfo['port'] = cert['port']
-          # certInfo['user'] = cert['user']
-          # certInfo['password'] = cert['pass']
-          gatherLogInfo(collector, dbConalog, cert)
-          break
-
-
+      cert = certColl.find_one({'_id': ObjectId(collector['host'])})
+      if cert :
+        gatherLogInfo(collector, dbConalog, cert)
       else :
         pass
 
