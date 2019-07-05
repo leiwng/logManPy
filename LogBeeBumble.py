@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+  :Purpose: get log backup job and complete the job.
+  :author: Lei.Wang,
+  :copyright: Orientsoft Co., Ltd.
+"""
+
 
 import paramiko
 import sys
@@ -9,10 +15,8 @@ import subprocess
 from datetime import datetime
 import config as cfg
 
-activeJob = cfg.job1
-homeSys = cfg.logManPy
 
-
+# exec shell command through ssh
 def ssh_exec(hostIP, port, userName, password, cmd):
 
   try:
@@ -43,6 +47,7 @@ def ssh_exec(hostIP, port, userName, password, cmd):
   return outList, errList
 
 
+# shell command compose for getting md5sum
 def cmd_md5sum(sysOS, logDir, logFilterStr):
 
   # different MD5 sum command on AIX and other OS
@@ -59,6 +64,7 @@ def cmd_md5sum(sysOS, logDir, logFilterStr):
   return cmd
 
 
+# parse datetime info from result lines by exec stat command in shell, for output sytle refer to Sample.txt
 def get_date_from_line(line) :
 
   reExpTime = r'(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}.\d{9}\s[+-]\d{4})'
@@ -73,6 +79,7 @@ def get_date_from_line(line) :
   return lineDate
 
 
+# get remote file properties
 def get_remote_file_size_date_Info(hostIP, port, userName, password, remoteDir, fileNameFilterStr) :
 
   fileBirthDate = None
@@ -146,6 +153,7 @@ def get_remote_file_size_date_Info(hostIP, port, userName, password, remoteDir, 
   return fileInfoList
 
 
+# Using sftp to transfer log files from remote to local
 # fileInfolist: [{name, size, aTime, mTime, cTime, bTime, dir, path, md5sum}, ...]
 def sftp_file_download(hostIP, port, user, password, remoteDir, localTmpDir, remoteFileInfoList) :
 
@@ -226,6 +234,7 @@ def sftp_file_download(hostIP, port, user, password, remoteDir, localTmpDir, rem
     sys.exit(100)
 
 
+# get md5sum of remote files
 def get_remote_files_md5sum(sysOS, logDir, logNameFilterStr, hostIP, port, user, pwd) :
 
   # get a file Info dict for {fileName, fileDir, filePath, md5sum}
@@ -280,6 +289,7 @@ def get_remote_files_md5sum(sysOS, logDir, logNameFilterStr, hostIP, port, user,
   return fileMD5SumList
 
 
+# get downloaded local file md5sum
 def get_local_files_md5sum(tmpDirWait4Zip, fileNameFilterStr) :
 
   # exec md5sum command
@@ -309,9 +319,8 @@ def get_local_files_md5sum(tmpDirWait4Zip, fileNameFilterStr) :
   return fileMD5SumList
 
 
+# save file property to local folder for job verification
 def write_dict_array_to_local_file(dictArray, dictArrayName, fileFullPath) :
-
-  #Write Array of dict to file
 
   # open file
   if os.path.exists(fileFullPath) :
@@ -338,6 +347,7 @@ def write_dict_array_to_local_file(dictArray, dictArrayName, fileFullPath) :
   f.close
 
 
+# zip downloaded local log file
 def zip_local_file(localLogDir, pwd, zipFileName, dirWait4Zip) :
 
   # use os command to zip local file
@@ -359,7 +369,8 @@ def zip_local_file(localLogDir, pwd, zipFileName, dirWait4Zip) :
     pass
 
 
-def main_proc() :
+# main process function for backup log from one single backup job
+def main_proc(activeJob, homeSys) :
 
   sysOS = activeJob['sysInfo']['sysOSType']
   logDir = activeJob['logInfo']['logDir']
@@ -427,3 +438,11 @@ def main_proc() :
   zip_local_file(logStoreDir, pwd, zipFileName, wait4zipDirName)
 
   return 0
+
+
+if __name__=="__main__" :
+
+  activeJob = cfg.job1
+  homeSys = cfg.logManPy
+
+  main_proc(activeJob, homeSys)

@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+  :Purpose: Get log config info from Conalog Mongo DB to save effort on log configuration of current host.
+  :author: Lei.Wang,
+  :copyright: Orientsoft Co., Ltd.
+"""
+
 
 import pymongo
 from bson import ObjectId
@@ -6,6 +12,7 @@ import config as cfg
 import re
 import traceback
 import os
+
 
 # connect to mongodb
 def mongoConn(connCfg) :
@@ -27,6 +34,8 @@ def mongoConn(connCfg) :
 
   return conn
 
+
+# gather log info from Conalog Mongo DB
 def gatherLogInfo(collector, dbConalog, cert) :
 
   # gather info for sysInfo
@@ -63,6 +72,7 @@ def gatherLogInfo(collector, dbConalog, cert) :
   logInfo['logAccessPassword'] = cert['pass']
   (logInfo['logDir'], logInfo['logFileFilterStr']) = os.path.split(collector['param'])
   logInfo['logFormatType'] = 'text'
+  # temporary set to 'getFromConalog' need configuration manually later
   logInfo['logDescOfProduceMethod'] = 'Get from Conalog'
   logInfo['logTypeOfProduceMethod'] = 'getFromConalog'
 
@@ -83,6 +93,7 @@ def gatherLogInfo(collector, dbConalog, cert) :
   tmpDocID = logInfoColl.insert_one(logInfo)
 
   return 0
+
 
 # gather LogInfo for system and host
 def mainProc() :
