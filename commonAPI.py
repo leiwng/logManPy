@@ -6,6 +6,10 @@
 """
 
 
+import pymongo
+from bson import ObjectId
+from datetime import datetime, timedelta
+
 # connect to mongodb
 def mongoConn(connCfg) :
 
@@ -25,3 +29,19 @@ def mongoConn(connCfg) :
   conn = pymongo.MongoClient(connStr)
 
   return conn
+
+
+
+# get which day's log need backup
+def getDate4Backup() :
+
+  return datetime.now() - timedelta(days=1)
+
+
+# get date string (YYYY-MM-DD) of the day which log need backup
+def getDate4BackupStr() :
+
+  date4Bkp = getDate4Backup()
+  date4BkpStr = str(date4Bkp.year) + '-' + str(date4Bkp.month).zfill(2) + '-' + str(date4Bkp.day).zfill(2)
+
+  return date4BkpStr

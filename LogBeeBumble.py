@@ -13,8 +13,11 @@ import traceback
 import re
 import subprocess
 from datetime import datetime
+import pymongo
+from bson import ObjectId
 
 import config as cfg
+import commonAPI as cAPI
 
 
 # exec shell command through ssh
@@ -371,7 +374,11 @@ def zip_local_file(localLogDir, zipPassword, zipFileName, wait4ZipDir) :
 
 
 # main process function for backup log from one single backup job
-def main_proc(newJob, homeSys) :
+def main_proc(newJob, homeSys, logJobColl) :
+
+  # set job status
+  newJob['jobStatus']['startTime'] = datetime.now()
+  newJob['jobStatus']['state'] = 'started'
 
   sysOS = newJob['sysInfo']['sysOS']
   logDir = newJob['logInfo']['logDir']
@@ -443,7 +450,26 @@ def main_proc(newJob, homeSys) :
 
 if __name__=="__main__" :
 
-  newJob = cfg.job1
+  # newJob = cfg.job1
   homeSys = cfg.logManPy
 
-  main_proc(newJob, homeSys)
+  conn = cAPI.mongoConn(cfg.logManPyMongo)
+  tmpDBName = cfg.logManPyMongo['dbName']
+  logManPyDB = conn[tmpDBName]
+
+  tmpCollName = cfg.logManPyMongo['logJobInfoCollName']
+  logJobColl = logManPyDB[tmpCollName]
+
+  date4BkpStr = cAPI.getDate4BackupStr()
+
+  newJob = logJobColl.find_one({'logDate4BackupInStr': date4BkpStr,
+                                'jobStatus.state': 'ready'})
+
+  if newJob :
+    main_proc(newJob, homeSys, logJobColl)
+
+  else :
+    # no newJob ready
+    pass
+
+  conn.close()

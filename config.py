@@ -11,7 +11,37 @@ from bson.objectid import ObjectId
 from datetime import datetime
 
 
+logJobRunningSetting = {
+  # How many backup job can be run
+  'jobThreadCntLmt': 5,
 
+  # how many jobs in running
+  'jobRunningCnt': 0,
+}
+
+
+logJobSum = {
+
+  # the date of logs which need backup
+  'logDate4BackupInStr': '',
+
+  # all job generated
+  'allJobGenerated': False,
+
+  # all today's job done
+  'allJobDone': False,
+
+  #statistics
+  'statInfo': {
+    'jobTotalCnt': 0,
+    'jobInReadyCnt': 0,
+    'jobInStartedCnt': 0,
+    'jobInFinishCnt': 0,
+    'jobInErrorCnt': 0,
+  }
+}
+
+# TODO: store into MongoDB, and Can be configured by user
 logManPy = {
   # host info
   'hostIP': '192.168.0.48',
@@ -36,6 +66,7 @@ logManPy = {
 }
 
 # system info
+# TODO: store into MongoDB, and Can be configured by user
 sysInfoColl = {
   'sysName': '核心系统', #系统中文名称
   'sysAbbr': 'core', # 系统名称英文缩写
@@ -43,6 +74,7 @@ sysInfoColl = {
 }
 
 # logInfo
+# TODO: store into MongoDB, and Can be configured by user
 logInfoColl = {
   'state': 'maintain', # 当前logInfo的状态： 'maintain' 'available'
   'sysID': 'system object id',
@@ -59,6 +91,7 @@ logInfoColl = {
 }
 
 # cert info collection
+# TODO: store into MongoDB, and Can be configured by user
 certColl = {
   "host" : "127.0.0.1",
   "port" : "22",
@@ -66,11 +99,13 @@ certColl = {
   "pass" : "aaa123",
 }
 
+# TODO: store into MongoDB, and Can be configured by user
 job1 = {
 
   # logs completed in which day to backup
   # The Rule is to backup yesterday's logs in today
   'logDate4Backup': '',
+  'logDate4BackupInStr': '2019-07-12',
 
   # system info
   'sysInfo': {
@@ -141,6 +176,7 @@ job1 = {
   },
 }
 
+# Basic Config
 conalogMongo = {
   'host': '192.168.0.149',
   'port': 27017,
@@ -151,6 +187,7 @@ conalogMongo = {
   'certCollName': 'cert',
 }
 
+# Basic Config
 logManPyMongo = {
   'host': '192.168.0.149',
   'port': 27017,
@@ -161,6 +198,8 @@ logManPyMongo = {
   'logInfoCollName': 'logInfo',
   'logJobInfoCollName': 'logJobInfo',
   'certCollName': 'cert',
+  'logJobSumCollName': 'logJobSum',
+  'logJobRunningSettingCollName': 'logJobRunningSetting',
 }
 
 collectorSample1 = {
