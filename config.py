@@ -19,7 +19,6 @@ logJobRunningSetting = {
   'jobRunningCnt': 0,
 }
 
-
 logJobSum = {
 
   # the date of logs which need backup

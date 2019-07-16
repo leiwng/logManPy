@@ -373,21 +373,94 @@ def zip_local_file(localLogDir, zipPassword, zipFileName, wait4ZipDir) :
     pass
 
 
+def updateJobStatus(job, jobColl, state) :
+
+  # update job status to DB
+  job['jobStatus']['startTime'] = datetime.now()
+  job['jobStatus']['state'] = state
+  condition = {'_id':ObjectId(job['_id'])}
+  result = jobColl.update_one(condition, {'$set': job})
+
+  return result
+
+def updateJobSum(logDate, jobSumColl, state) :
+
+  # update logJobSum in DB
+  condition = {'logDate4BackupInStr': logDate}
+  jobSum = jobSumColl.find_one(condition)
+  result = None
+
+  if jobSum :
+    if state == 'started' :
+
+      tmpCnt = jobSum['statInfo']['jobInReadyCnt']
+      jobSum['statInfo']['jobInReadyCnt'] = tmpCnt - 1
+
+      tmpCnt = jobSum['statInfo']['jobInStartedCnt']
+      jobSum['statInfo']['jobInStartedCnt'] = tmpCnt + 1
+
+    elif state == 'finish' :
+
+      tmpCnt = jobSum['statInfo']['jobInFinishCnt']
+      jobSum['statInfo']['jobInFinishCnt'] = tmpCnt + 1
+
+    elif state == 'error' :
+
+      tmpCnt = jobSum['statInfo']['jobInErrorCnt']
+      jobSum['statInfo']['jobInErrorCnt'] = tmpCnt + 1
+
+    result = jobSumColl.update_one(condition, {'$set': jobSum})
+    # TODO: check result, if success, result.matched_count=1, result.modified_count=1
+
+  else :
+    # no logJobSum found of the day
+    # TODO: report error, and exit.
+    pass
+
+  return result
+
+
+def updateJobRunningSetting(jobRunningSettingColl, runningNum) :
+
+  # update logJobRunning Setting in DB
+  jobRunningSetting = jobRunningSettingColl.find_one()
+  result = None
+  if jobRunningSetting :
+    tmpCnt = jobRunningSetting['jobRunningCnt']
+    jobRunningSetting['jobRunningCnt'] = tmpCnt + runningNum
+    result = jobRunningSettingColl.update_one({}, {'$set': jobRunningSetting})
+    # TODO: check result, if success, result.matched_count=1, result.modified_count=1
+  else:
+    # no logJobRunningSetting found -> error
+    # TODO: report error, and exit
+    pass
+
+  return result
+
+
 # main process function for backup log from one single backup job
-def main_proc(newJob, homeSys, logJobColl) :
+def main_proc(job, homeSys, jobColl, jobSumColl, jobRunningSettingColl) :
 
-  # set job status
-  newJob['jobStatus']['startTime'] = datetime.now()
-  newJob['jobStatus']['state'] = 'started'
+  # update job status to DB
+  result = updateJobStatus(job, jobColl, 'started')
+  # TODO: check result, if success, result.matched_count=1, result.modified_count=1
 
-  sysOS = newJob['sysInfo']['sysOS']
-  logDir = newJob['logInfo']['logDir']
-  logNameFilterStr = newJob['logInfo']['logFileFilterStr']
-  hostIP = newJob['logInfo']['cert']['host']
-  port = newJob['logInfo']['cert']['port']
-  user = newJob['logInfo']['cert']['user']
-  pwd = newJob['logInfo']['cert']['pass']
-  logLocalDir = newJob['logBackupSaveInfo']['logSaveBaseDir']
+  # update logJobSum in DB
+  result = updateJobSum(job['logDate4BackupInStr'], jobSumColl, 'started')
+  # TODO: check result, if success, result.matched_count=1, result.modified_count=1
+
+  # update logJobRunning Setting in DB
+  result = updateJobRunningSetting(jobRunningSettingColl, 1)
+  # TODO: check result, if success, result.matched_count=1, result.modified_count=1
+
+  sysOS = job['sysInfo']['sysOS']
+  logDir = job['logInfo']['logDir']
+  logNameFilterStr = job['logInfo']['logFileFilterStr']
+  hostIP = job['logInfo']['cert']['host']
+  port = job['logInfo']['cert']['port']
+  user = job['logInfo']['cert']['user']
+  pwd = job['logInfo']['cert']['pass']
+  logLocalDir = job['logBackupSaveInfo']['logSaveBaseDir']
   logLocalTmpDir = logLocalDir + os.path.sep + homeSys['wait4ZipDir']
 
   # get md5sum Info of files
@@ -436,14 +509,28 @@ def main_proc(newJob, homeSys, logJobColl) :
           sys.exit(2)
         else :
           # two md5sum are equal exit current loop for next loop
-          break
+          pass
+
+        break
 
   # Zip local files
-  logStoreDir = newJob['logBackupSaveInfo']['logSaveBaseDir']
-  zipPassword = newJob['logInfo']['logSaveZipPassword']
+  logStoreDir = job['logBackupSaveInfo']['logSaveBaseDir']
+  zipPassword = job['logInfo']['logSaveZipPassword']
   zipFileName = homeSys['logZipFileName']
   wait4zipDirName = homeSys['wait4ZipDir']
   zip_local_file(logStoreDir, zipPassword, zipFileName, wait4zipDirName)
+
+  # update job status to DB
+  result = updateJobStatus(job, jobColl, 'finish')
+  # TODO: check result, if success, result.matched_count=1, result.modified_count=1
+
+  # update logJobSum in DB
+  result = updateJobSum(job['logDate4BackupInStr'], jobSumColl, 'finish')
+  # TODO: check result, if success, result.matched_count=1, result.modified_count=1
+
+  # update logJobRunning Setting in DB
+  result = updateJobRunningSetting(jobRunningSettingColl, -1)
+  # TODO: check result, if success, result.matched_count=1, result.modified_count=1
 
   return 0
 
@@ -453,20 +540,27 @@ if __name__=="__main__" :
   # newJob = cfg.job1
   homeSys = cfg.logManPy
 
+  # contact DB, get new job
   conn = cAPI.mongoConn(cfg.logManPyMongo)
   tmpDBName = cfg.logManPyMongo['dbName']
   logManPyDB = conn[tmpDBName]
 
   tmpCollName = cfg.logManPyMongo['logJobInfoCollName']
-  logJobColl = logManPyDB[tmpCollName]
+  jobColl = logManPyDB[tmpCollName]
+
+  tmpCollName = cfg.logManPyMongo['logJobSumCollName']
+  jobSumColl = logManPyDB[tmpCollName]
+
+  tmpCollName = cfg.logManPyMongo['logJobRunningSettingCollName']
+  jobRunningSettingColl = logManPyDB[tmpCollName]
 
   date4BkpStr = cAPI.getDate4BackupStr()
 
-  newJob = logJobColl.find_one({'logDate4BackupInStr': date4BkpStr,
-                                'jobStatus.state': 'ready'})
+  newJob = jobColl.find_one({'logDate4BackupInStr': date4BkpStr,
+                             'jobStatus.state': 'ready'})
 
   if newJob :
-    main_proc(newJob, homeSys, logJobColl)
+    main_proc(newJob, homeSys, jobColl, jobSumColl, jobRunningSettingColl)
 
   else :
     # no newJob ready
