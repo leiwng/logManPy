@@ -10,6 +10,7 @@ paramiko = "*"
 pylint = "*"
 pymongo = "*"
 traceback = "*"
+logging = "*"
 
 [requires]
 python_version = "3.7"
