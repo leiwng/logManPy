@@ -22,6 +22,9 @@ from datetime import datetime, timedelta
 import config as cfg
 import commonAPI as cAPI
 
+from commonLogging import Log
+log = Log(__name__).getLogger()
+
 
 # visit all doc of LogInfo collection to generate job
 def mainProc(homeSys) :

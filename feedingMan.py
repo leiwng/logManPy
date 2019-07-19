@@ -15,12 +15,18 @@ from datetime import datetime, timedelta
 
 import config as cfg
 import commonAPI as cAPI
-import LogBeeBumble as bee
+import beeBumble as bee
+import logManLog as log
+
+from commonLogging import Log
+log = Log(__name__).getLogger()
 
 
 def mainProc() :
 
   homeSys = cfg.logManPy
+
+
 
   conn = cAPI.mongoConn(cfg.logManPyMongo)
   tmpDBName = cfg.logManPyMongo['dbName']

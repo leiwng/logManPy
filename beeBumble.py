@@ -19,6 +19,9 @@ from bson import ObjectId
 import config as cfg
 import commonAPI as cAPI
 
+from commonLogging import Log
+log = Log(__name__).getLogger()
+
 
 # exec shell command through ssh
 def ssh_exec(hostIP, port, userName, password, cmd):

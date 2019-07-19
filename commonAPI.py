@@ -10,6 +10,10 @@ import pymongo
 from bson import ObjectId
 from datetime import datetime, timedelta
 
+from commonLogging import Log
+log = Log(__name__).getLogger()
+
+
 # connect to mongodb
 def mongoConn(connCfg) :
 
@@ -29,7 +33,6 @@ def mongoConn(connCfg) :
   conn = pymongo.MongoClient(connStr)
 
   return conn
-
 
 
 # get which day's log need backup

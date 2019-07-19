@@ -15,6 +15,9 @@ import os
 import config as cfg
 import commonAPI as cAPI
 
+from commonLogging import Log
+log = Log(__name__).getLogger()
+
 
 # gather log info from Conalog Mongo DB
 def gatherLogInfo(collector, dbConalog, cert) :
