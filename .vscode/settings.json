@@ -3,6 +3,7 @@
     "conalog",
     "csum",
     "leiw",
+    "mongodb",
     "paramiko",
     "popen",
     "sftp",

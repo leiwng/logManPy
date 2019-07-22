@@ -11,6 +11,7 @@ pylint = "*"
 pymongo = "*"
 traceback = "*"
 logging = "*"
+bson = "*"
 
 [requires]
 python_version = "3.7"

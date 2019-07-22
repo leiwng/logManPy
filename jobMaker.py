@@ -10,6 +10,7 @@
         'started': job is started
         'finish': job is finish
         'error': met error when doing the job
+    3) ErrorCode -4xxx
 """
 
 import pymongo
@@ -113,11 +114,11 @@ def mainProc(homeSys) :
 
     else :
       # no available logInfo item for generating job.
-      pass
+      log.info('[InfoDesc:no available logInfo item for generating job]')
 
   else :
     # today's backup jobs have already been generated.
-    pass
+    log.info('[InfoDesc:today backup jobs have already been generated]')
 
   conn.close()
   return 0

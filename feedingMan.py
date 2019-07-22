@@ -3,6 +3,7 @@
   :Purpose: Give job to Bumble Bee to complete log backup job.
   :author: Lei.Wang,
   :copyright: Orientsoft Co., Ltd.
+  :comments: ErrorCode -3xxx
 """
 
 
@@ -12,11 +13,13 @@ import re
 import traceback
 import os
 from datetime import datetime, timedelta
+import subprocess
+import time
+import sys
 
 import config as cfg
 import commonAPI as cAPI
 import beeBumble as bee
-import logManLog as log
 
 from commonLogging import Log
 log = Log(__name__).getLogger()
@@ -25,8 +28,6 @@ log = Log(__name__).getLogger()
 def mainProc() :
 
   homeSys = cfg.logManPy
-
-
 
   conn = cAPI.mongoConn(cfg.logManPyMongo)
   tmpDBName = cfg.logManPyMongo['dbName']
@@ -65,36 +66,29 @@ def mainProc() :
 
             # running job thread below limit, which can start new job
             # TODO: later chg to subprocess or use PM2 to start
-            result = bee.main_proc(job, homeSys)
+            rltCode = subprocess.call(['python', 'beeBumble.py'])
 
-            if result == 0 :
-              # start job successfully
-              # update Running Setting of log job in MongoDB
-
-              # update log Job summary in MongoDB
-
-            else :
-              # error on starting new job, continue to start next job
-              pass
+            if not rltCode :
+              # log backup job exec was not successfully
+              log.error('[ErrorDesc:beeBumble job exec met error]')
 
           else :
-
             # enough running jobs, no new job
-            pass
+            time.sleep(60)
 
         else :
-
           # Error: no job Running Setting found in mongoDB
-          pass
+          log.error('[ErrorDesc:no jobRunningSetting in MongoDB]')
+          sys.exit(-3001)
 
     else :
-
       # no job ready for processing
+      log.info('[InfoDesc:No backup job ready for processing]')
       pass
-
 
   else :
     # log backup job has not been generated.
+    log.info('[InfoDesc:log backup job has not been generated]')
     pass
 
 

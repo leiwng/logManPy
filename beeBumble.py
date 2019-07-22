@@ -3,6 +3,7 @@
   :Purpose: get log backup job and complete the job.
   :author: Lei.Wang,
   :copyright: Orientsoft Co., Ltd.
+  :comments: ErrorCode -1xxx
 """
 
 
@@ -26,6 +27,8 @@ log = Log(__name__).getLogger()
 # exec shell command through ssh
 def ssh_exec(hostIP, port, userName, password, cmd):
 
+  rtnCode = 0
+
   try:
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -36,22 +39,14 @@ def ssh_exec(hostIP, port, userName, password, cmd):
     errList = stderr.readlines()
 
   except Exception as e:
-    print('-= vvv Func: ssh_exec Exception vvv =-')
-    print('Exception Desc: Exception when exec ssh command')
-    print('hostIP: ', hostIP)
-    print('cmd: ', cmd)
-    print('str(Exception):\t', str(Exception))
-    print('str(e):\t\t', str(e))
-    print('repr(e):\t', repr(e))
-    print('e.message:\t', e.message)
-    print('traceback.print_exc():', traceback.print_exc())
-    print('traceback.format_exc():\n%s' %traceback.format_exc())
-    print('-= ^^^ END ^^^ =-')
+    log.error('[ErrorDesc:Exception when exec ssh command] [hostIP:%s] [Cmd:%s] [str(e):%s] [repr(e):%s] [e.message:%s]' % (hostIP, cmd, str(e), repr(e), e.message))
     client.close()
-    sys.exit(1)
+    rtnCode = -1001
+    return rtnCode, [], []
 
   client.close()
-  return outList, errList
+
+  return rtnCode, outList, errList
 
 
 # shell command compose for getting md5sum
@@ -71,7 +66,7 @@ def cmd_md5sum(sysOS, logDir, logFilterStr):
   return cmd
 
 
-# parse datetime info from result lines by exec stat command in shell, for output sytle refer to Sample.txt
+# parse datetime info from result lines by exec stat command in shell, for output style refer to Sample.txt
 def get_date_from_line(line) :
 
   reExpTime = r'(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}.\d{9}\s[+-]\d{4})'
@@ -94,75 +89,72 @@ def get_remote_file_size_date_Info(hostIP, port, userName, password, remoteDir, 
   fileModifyDate = None
   fileAccessDate = None
   fileSize = 0
-
-  cmd = 'cd ' + remoteDir + ';' + 'stat ' + fileNameFilterStr
-  outList, errList = ssh_exec(hostIP, port, userName, password, cmd)
-
+  rtnCode = 0
   fileInfoList = []
   fileInfo = {}
-  if len(errList) == 0 :
-    #no error from command exec
-    if len(outList) > 0 :
 
-      # deal with the line one by one to get file Info
-      for line in outList :
+  cmd = 'cd ' + remoteDir + ';' + 'stat ' + fileNameFilterStr
+  rltCode, outList, errList = ssh_exec(hostIP, port, userName, password, cmd)
 
-        if re.search(r'(File: )', line) :
-          #find the start of file Info block
-          fileInfo['name'] = line.strip()[ len('File: ') : ]
+  # command exec met exception
+  if not rltCode:
+    rtnCode = -1011
+    log.error('[ErrorDesc:Cause func ssh_exec rltCode is not equal zero]')
+    return rtnCode, []
 
-        if re.search(r'(Size: )', line) :
-          #find size:
-          shortLine = line.strip()
-          shortLine = shortLine[ : shortLine.find('Blocks: ') ]
-          fileInfo['size'] = int(shortLine.strip()[ len('Size: ') : ])
+  # command exec report error
+  if len(errList) != 0:
+    rtnCode = -1012
+    log.error('[ErrorDesc:shell command - stat execute error] [hostIP:%s] [Cmd:%s] [ExecErrorList:%s]' % (hostIP, cmd, '|'.join(errList)))
+    return rtnCode, []
 
-        if line.find('Access: (') >= 0 :
-          continue
+  # command exec successfully, but output is empty - no file found in the dir
+  if len(outList) == 0:
+    rtnCode = -1013
+    log.error('[ErrorDesc:stat command output is empty] [hostIP:%s] [Cmd:%s]' % (hostIP, cmd))
+    return rtnCode, []
 
-        if re.search(r'(Access: )', line) :
-          # file aTime
-          fileInfo['aTime'] = get_date_from_line(line)
+  # deal with the line one by one to get file Info
+  for line in outList :
 
-        if re.search(r'(Modify: )', line) :
-          # file mTime
-          fileInfo['mTime'] = get_date_from_line(line)
+    if re.search(r'(File: )', line) :
+      #find the start of file Info block
+      fileInfo['name'] = line.strip()[ len('File: ') : ]
 
-        if re.search(r'(Change: )', line) :
-          # file aTime
-          fileInfo['cTime'] = get_date_from_line(line)
+    if re.search(r'(Size: )', line) :
+      #find size:
+      shortLine = line.strip()
+      shortLine = shortLine[ : shortLine.find('Blocks: ') ]
+      fileInfo['size'] = int(shortLine.strip()[ len('Size: ') : ])
 
-        if re.search(r'(Birth: )', line) :
-          # file mTime
-          fileInfo['bTime'] = get_date_from_line(line)
-          fileInfoList.append(fileInfo)
+    if line.find('Access: (') >= 0 :
+      continue
 
-    else :
-      print('-= vvv Func: get_file_time_Info Error vvv =-')
-      print('Error Desc: stat command output is not excepted')
-      print('hostIP: ', hostIP)
-      print('cmd: ', cmd)
-      print('traceback.print_exc():', traceback.print_exc())
-      print('traceback.format_exc():\n%s' %traceback.format_exc())
-      print('-= ^^^ END ^^^ =-')
-      sys.exit(100)
-  else :
-    print('-= vvv get_file_time_Info Error vvv =-')
-    print('Error Desc: stat command meet error')
-    print('hostIP: ', hostIP)
-    print('cmd: ', cmd)
-    print('Exec Error:', errList)
-    print('traceback.print_exc():', traceback.print_exc())
-    print('traceback.format_exc():\n%s' %traceback.format_exc())
-    print('-= ^^^ END ^^^ =-')
-    sys.exit(101)
+    if re.search(r'(Access: )', line) :
+      # file aTime
+      fileInfo['aTime'] = get_date_from_line(line)
 
-  return fileInfoList
+    if re.search(r'(Modify: )', line) :
+      # file mTime
+      fileInfo['mTime'] = get_date_from_line(line)
+
+    if re.search(r'(Change: )', line) :
+      # file aTime
+      fileInfo['cTime'] = get_date_from_line(line)
+
+    if re.search(r'(Birth: )', line) :
+      # file mTime
+      fileInfo['bTime'] = get_date_from_line(line)
+      fileInfoList.append(fileInfo)
+
+  return rtnCode, fileInfoList
 
 
 # Using sftp to transfer log files from remote to local
 # fileInfolist: [{name, size, aTime, mTime, cTime, bTime, dir, path, md5sum}, ...]
 def sftp_file_download(hostIP, port, user, password, remoteDir, localTmpDir, remoteFileInfoList) :
+
+  rtnCode = 0
 
   try :
     t = paramiko.Transport(sock = (hostIP, port))
@@ -225,105 +217,98 @@ def sftp_file_download(hostIP, port, user, password, remoteDir, localTmpDir, rem
     t.close()
 
   except Exception as e :
-    print('-= vvv Func: sftp_file_download Exception vvv =-')
-    print('Exception Desc: Exception when create local dir for storing sftp files')
-    print('hostIP: ', hostIP)
-    print('localDownloadWait4ZipDir: ', localTmpDir)
-    print('str(Exception):\t', str(Exception))
-    print('str(e):\t\t', str(e))
-    print('repr(e):\t', repr(e))
-    print('e.message:\t', e.message)
-    print('traceback.print_exc():', traceback.print_exc())
-    print('traceback.format_exc():\n%s' %traceback.format_exc())
-    print('-= ^^^ END ^^^ =-')
+    log.error('[ErrorDesc:Exception when create local dir for storing sftp files] [hostIP:%s] [localDownloadWait4ZipDir:%s] [str(e):%s] [repr(e):%s] [e.message:%s]' % (hostIP, localTmpDir, str(e), repr(e), e.message))
     sftp.close()
     t.close()
-    sys.exit(100)
+    rtnCode = -1031
+    return rtnCode
+
+  return rtnCode
 
 
 # get md5sum of remote files
 def get_remote_files_md5sum(sysOS, logDir, logNameFilterStr, hostIP, port, user, pwd) :
 
+
+  rtnCode = 0
+
   # get a file Info dict for {fileName, fileDir, filePath, md5sum}
   cmd = cmd_md5sum(sysOS, logDir, logNameFilterStr)
 
   # exec command to get md5sum
-  outList, errList = ssh_exec(hostIP, port, user, pwd, cmd)
+  rltCode, outList, errList = ssh_exec(hostIP, port, user, pwd, cmd)
+
+  # command exec met exception
+  if not rltCode :
+    rtnCode = -1021
+    log.error('[ErrorDesc:Cause func ssh_exec rltCode is not equal zero]')
+    return rtnCode, []
+
+  # command exec report error
+  if len(errList) != 0 :
+    rtnCode = -1022
+    log.error('[ErrorDesc:shell command - stat execute error] [hostIP:%s] [Cmd:%s] [ExecErrorList:%s]' % (hostIP, cmd, '|'.join(errList)))
+    return rtnCode, []
+
+  # command exec successfully, but output is empty - no file found in the dir
+  if len(outList) == 0:
+    rtnCode = -1023
+    log.error('[ErrorDesc:stat command output is empty] [hostIP:%s] [Cmd:%s]' % (hostIP, cmd))
+    return rtnCode, []
 
   fileMD5SumList = []
-  if len(errList) == 0 :
-    # no error for command exec
-    if len(outList) > 0 :
-      # cmd exec have output
-      for line in outList :
-        split = re.split(r'[;,\s]\s*', line)
-        fileFullPath = split[1]
-        fileMD5Sum = split[0]
-        fileName = os.path.basename(fileFullPath)
-        fileDir = os.path.dirname(fileFullPath)
-        fileMD5SumList.append(
-          {
-            'name': fileName,
-            'dir' : fileDir,
-            'path': fileFullPath,
-            'md5sum': fileMD5Sum,
-          }
-        )
-    else :
-      # no output from cmd exec, no valid log file be filtered out
-      print('-= vvv Func: work_process Error vvv =-')
-      print('Error Desc: NO Log file filtered out when get MD5sum of log files')
-      print('hostIP: ', hostIP)
-      print('Command: ', cmd)
-      print('Exec Error:', errList)
-      print('traceback.print_exc():', traceback.print_exc())
-      print('traceback.format_exc():\n%s' %traceback.format_exc())
-      print('-= ^^^ END ^^^ =-')
-      sys.exit(3)
+  # cmd exec have output
+  for line in outList :
+    split = re.split(r'[;,\s]\s*', line)
+    fileFullPath = split[1]
+    fileMD5Sum = split[0]
+    fileName = os.path.basename(fileFullPath)
+    fileDir = os.path.dirname(fileFullPath)
+    fileMD5SumList.append(
+      {
+        'name': fileName,
+        'dir' : fileDir,
+        'path': fileFullPath,
+        'md5sum': fileMD5Sum,
+      }
+    )
 
-  else :
-    # error for command exec
-    print('-= vvv Func: work_process Error vvv =-')
-    print('Error Desc: ssh command exec error.')
-    print('hostIP: ', hostIP)
-    print('Command: ', cmd)
-    print('Exec Error:', errList)
-    print('traceback.print_exc():', traceback.print_exc())
-    print('traceback.format_exc():\n%s' %traceback.format_exc())
-    print('-= ^^^ END ^^^ =-')
-    sys.exit(2)
-
-  return fileMD5SumList
+  return rtnCode, fileMD5SumList
 
 
 # get downloaded local file md5sum
-def get_local_files_md5sum(tmpwait4ZipDir, fileNameFilterStr) :
+def get_local_files_md5sum(wait4ZipDir, fileNameFilterStr) :
+
+  rtnCode = 0
 
   # exec md5sum command
-  cmd = 'md5sum ' + tmpwait4ZipDir + os.path.sep + fileNameFilterStr
+  cmd = 'md5sum ' + wait4ZipDir + os.path.sep + fileNameFilterStr
   result = os.popen(cmd, 'r')
   resultList = result.readlines()
 
-  fileMD5SumList = []
-  if len(resultList) > 0 :
-    for line in resultList :
-      split = re.split(r'[;,\s]\s*', line)
-      fileFullPath = split[1]
-      fileMD5Sum = split[0]
-      fileName = os.path.basename(fileFullPath)
-      fileDir = os.path.dirname(fileFullPath)
-      fileMD5SumList.append(
-        {
-          'name': fileName,
-          'dir' : fileDir,
-          'path': fileFullPath,
-          'md5sum': fileMD5Sum,
-        }
-      )
-  else :
-    pass
+  # command exec output is empty
+  if len(resultList) == 0 :
+    rtnCode = -1041
+    log.error('[ErrorDesc:exec md5sum for local dir got empty output, looks no file in local dir] [wait4ZipDir:%s] [fileNameFilterStr:%s] [Cmd:%s]' % (wait4ZipDir, fileNameFilterStr, cmd))
+    return rtnCode, []
 
-  return fileMD5SumList
+  fileMD5SumList = []
+  for line in resultList :
+    split = re.split(r'[;,\s]\s*', line)
+    fileFullPath = split[1]
+    fileMD5Sum = split[0]
+    fileName = os.path.basename(fileFullPath)
+    fileDir = os.path.dirname(fileFullPath)
+    fileMD5SumList.append(
+      {
+        'name': fileName,
+        'dir' : fileDir,
+        'path': fileFullPath,
+        'md5sum': fileMD5Sum,
+      }
+    )
+
+  return rtnCode, fileMD5SumList
 
 
 # save file property to local folder for job verification
@@ -468,10 +453,16 @@ def main_proc(job, homeSys, jobColl, jobSumColl, jobRunningSettingColl) :
 
   # get md5sum Info of files
   # [{name, dir, path, md5sum}, ... ]
-  remoteFileMD5SumList = get_remote_files_md5sum(sysOS, logDir, logNameFilterStr, hostIP, port, user, pwd)
+  rltCode, remoteFileMD5SumList = get_remote_files_md5sum(sysOS, logDir, logNameFilterStr, hostIP, port, user, pwd)
+  if not rltCode :
+    log.error('[ErrorDesc:get_remote_files_md5sum func met error]')
+    sys.exit(rltCode)
 
   # [{name, size, aTime, mTime, cTime, bTime}, ...]
-  remoteFileInfoList = get_remote_file_size_date_Info(hostIP, port, user, pwd, logDir, logNameFilterStr)
+  rltCode, remoteFileInfoList = get_remote_file_size_date_Info(hostIP, port, user, pwd, logDir, logNameFilterStr)
+  if not rltCode :
+    log.error('[ErrorDesc:get_remote_file_size_date_Info func met error]')
+    sys.exit(rltCode)
 
   # [{name, size, aTime, mTime, cTime, bTime, dir, path, md5sum}, ...]
   remoteMergedFileInfoList = []
@@ -483,10 +474,16 @@ def main_proc(job, homeSys, jobColl, jobSumColl, jobRunningSettingColl) :
         break
 
   # log file transfer to local
-  sftp_file_download(hostIP, port, user, pwd, logDir, logLocalTmpDir, remoteMergedFileInfoList)
+  rltCode = sftp_file_download(hostIP, port, user, pwd, logDir, logLocalTmpDir, remoteMergedFileInfoList)
+  if not rltCode :
+    log.error('[ErrorDesc:sftp_file_download func met error]')
+    sys.exit(rltCode)
 
   # check Tx file md5sum
-  localFileMD5SumList = get_local_files_md5sum(logLocalTmpDir, logNameFilterStr)
+  rltCode, localFileMD5SumList = get_local_files_md5sum(logLocalTmpDir, logNameFilterStr)
+  if not rltCode :
+    log.error('[ErrorDesc:get_local_files_md5sum func met error]')
+    sys.exit(rltCode)
 
   # save file property to file
   fileNameOfFileProperty = logLocalTmpDir + os.path.sep + homeSys['fileNameOfFileProperty']
@@ -498,18 +495,8 @@ def main_proc(job, homeSys, jobColl, jobSumColl, jobRunningSettingColl) :
     for lFileInfo in localFileMD5SumList :
       if rFileInfo['name'] == lFileInfo['name'] :
         if rFileInfo['md5sum'] != lFileInfo['md5sum'] :
-          # ERROR PANIC
-          print('-= vvv Func: main_proc Error vvv =-')
-          print('Error Desc: MD5Sum not equal between remote file and downloaded local file.')
-          print('hostIP: ', hostIP)
-          print('Remote File : ', rFileInfo['path'])
-          print('Remote File MD5Sum: ', rFileInfo['md5sum'])
-          print('Local File : ', lFileInfo['path'])
-          print('Local File MD5Sum: ', lFileInfo['md5sum'])
-          print('traceback.print_exc():', traceback.print_exc())
-          print('traceback.format_exc():\n%s' %traceback.format_exc())
-          print('-= ^^^ END ^^^ =-')
-          sys.exit(2)
+          log.error('[ErrorDesc:MD5Sum not equal between remote file and downloaded local file] [hostIP:%s] [RemoteFile:%s] [RemoteFileMD5Sum:%s] [LocalFile:%s] [LocalFileMD5Sum:%s]' % (hostIP, rFileInfo['path'], rFileInfo['md5sum'], lFileInfo['path'], lFileInfo['md5sum']))
+          sys.exit(-1091)
         else :
           # two md5sum are equal exit current loop for next loop
           pass
@@ -540,6 +527,9 @@ def main_proc(job, homeSys, jobColl, jobSumColl, jobRunningSettingColl) :
 
 if __name__=="__main__" :
 
+  rtnCode = 0
+  rltCode = 0
+
   # newJob = cfg.job1
   homeSys = cfg.logManPy
 
@@ -563,10 +553,11 @@ if __name__=="__main__" :
                              'jobStatus.state': 'ready'})
 
   if newJob :
-    main_proc(newJob, homeSys, jobColl, jobSumColl, jobRunningSettingColl)
-
+    rltCode = main_proc(newJob, homeSys, jobColl, jobSumColl, jobRunningSettingColl)
   else :
     # no newJob ready
+    log.info('[InfoDesc: no newJob found]')
     pass
 
   conn.close()
+  sys.exit(rltCode)

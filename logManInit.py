@@ -3,6 +3,7 @@
   :Purpose: Get log config info from Conalog Mongo DB to save effort on log configuration of current host.
   :author: Lei.Wang,
   :copyright: Orientsoft Co., Ltd.
+  :comments: ErrorCode -2xxx
 """
 
 
@@ -18,13 +19,14 @@ import commonAPI as cAPI
 from commonLogging import Log
 log = Log(__name__).getLogger()
 
-
 # gather log info from Conalog Mongo DB
 def gatherLogInfo(collector, dbConalog, cert) :
 
   # gather info for sysInfo
   sysInfo = {}
   collectorName = collector['name']
+
+  # 系统名称的缩写取自Collector Name的开始的连续英文字母序列
   reExp = r'(^[A-Za-z]+)'
   sysAbbr = re.match(reExp, collectorName)
   if sysAbbr :
@@ -38,13 +40,8 @@ def gatherLogInfo(collector, dbConalog, cert) :
       sysInfo['sysOS'] = 'AIX'
 
   else :
-    print('-= vvv Func: gatherLogInfo Error vvv =-')
-    print('Error Desc: cannot parse out system Abbr from collector name')
-    print('collectorName: ', collectorName)
-    print('traceback.print_exc():', traceback.print_exc())
-    print('traceback.format_exc():\n%s' %traceback.format_exc())
-    print('-= ^^^ END ^^^ =-')
-    return -1
+    log.error('[ErrorDesc:Cannot parse out system Abbr from collector name, which the name is %s]' % (collectorName))
+    return -2011
 
   logInfo = {}
   logInfo['logName'] = collectorName
@@ -113,7 +110,7 @@ def mainProc() :
         pass
 
   else :
-    pass
+    log.info('No collector config found in Conalog DB.')
 
 
 if __name__=="__main__" :
