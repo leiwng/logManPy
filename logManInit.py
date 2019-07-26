@@ -80,6 +80,8 @@ def gatherLogInfo(collector, dbConalog, cert) :
   logInfoColl = dbLogManPy[tmpCollName]
   tmpDocID = logInfoColl.insert_one(logInfo)
 
+  logManPyConn.close()
+
   return 0
 
 
@@ -111,6 +113,8 @@ def mainProc() :
 
   else :
     log.info('No collector config found in Conalog DB.')
+
+  conn.close()
 
 
 if __name__=="__main__" :

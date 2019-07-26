@@ -349,16 +349,10 @@ def zip_local_file(localLogDir, zipPassword, zipFileName, wait4ZipDir) :
 
   if rtCode != 0 :
     # command exec fail
-    print('-= vvv Func: zip_local_file Error vvv =-')
-    print('Error Desc: zip local log file failure')
-    print('cmd: ', cmd)
-    print('Error Msg: ', cmdOutput)
-    print('traceback.print_exc():', traceback.print_exc())
-    print('traceback.format_exc():\n%s' %traceback.format_exc())
-    print('-= ^^^ END ^^^ =-')
-    sys.exit(100)
+    log.error('[ErrorDesc:exec zip command fail] [localLogDir:%s] [wait4ZipDir:%s] [Cmd:%s] [ErrorMsg:%s]' % (localLogDir, wait4ZipDir, cmd, cmdOutput))
+    return -1051
   else :
-    pass
+    return 0
 
 
 def updateJobStatus(job, jobColl, state) :
@@ -508,7 +502,10 @@ def main_proc(job, homeSys, jobColl, jobSumColl, jobRunningSettingColl) :
   zipPassword = job['logInfo']['logSaveZipPassword']
   zipFileName = homeSys['logZipFileName']
   wait4zipDirName = homeSys['wait4ZipDir']
-  zip_local_file(logStoreDir, zipPassword, zipFileName, wait4zipDirName)
+  rltCode = zip_local_file(logStoreDir, zipPassword, zipFileName, wait4zipDirName)
+  if not rltCode :
+    log.error('[ErrorDesc:zip_local_file func met error]')
+    sys.exit(rltCode)
 
   # update job status to DB
   result = updateJobStatus(job, jobColl, 'finish')

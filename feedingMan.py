@@ -79,6 +79,7 @@ def mainProc() :
         else :
           # Error: no job Running Setting found in mongoDB
           log.error('[ErrorDesc:no jobRunningSetting in MongoDB]')
+          conn.close()
           sys.exit(-3001)
 
     else :
@@ -91,6 +92,7 @@ def mainProc() :
     log.info('[InfoDesc:log backup job has not been generated]')
     pass
 
+  conn.close()
 
 if __name__=="__main__" :
 
