@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#! python3
 # -*- coding: utf-8 -*-
 """
   :Purpose: config file for logManPy system.

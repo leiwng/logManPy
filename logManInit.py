@@ -1,3 +1,4 @@
+#! python3
 # -*- coding: utf-8 -*-
 """
   :Purpose: Get log config info from Conalog Mongo DB to save effort on log configuration of current host.

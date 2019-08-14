@@ -1,3 +1,4 @@
+#! python3
 # -*- coding: utf-8 -*-
 """
   :Purpose: Generate log backup job periodically(usually daily).
