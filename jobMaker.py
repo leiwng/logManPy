@@ -89,7 +89,7 @@ def mainProc(homeSys) :
 
         # 日志备份路径  *
         # backupRootDir + backupDirName + abbr + YYYY + MM + DD + hostIP + logAbbr
-        logJob['logBackupSaveInfo']['logSaveBaseDir'] = homeSys['backupRootDir'] + os.sep + homeSys['backupDirName'] + os.sep + sysInfo['sysAbbr'] + os.sep + str(date4Bkp.year) + os.sep + str(date4Bkp.month).zfill(2) + os.sep + str(date4Bkp.day).zfill(2) + os.sep + certInfo['host'] + os.sep + logInfo['logAbbr'] # TODO: 'os.sep' is surpose logManPy System and target user system are all use Linux, a safe way is to check the 'sysOS' field in sysInfo dict.
+        logJob['logBackupSaveInfo']['logSaveBaseDir'] = homeSys['backupRootDir'] + os.sep + homeSys['backupDirName'] + os.sep + sysInfo['sysAbbr'] + os.sep + str(date4Bkp.year) + os.sep + str(date4Bkp.month).zfill(2) + os.sep + str(date4Bkp.day).zfill(2) + os.sep + certInfo['host'] + os.sep + logInfo['logAbbr']  # TODO: 'os.sep' is surpose logManPy System and target user system are all use Linux, a safe way is to check the 'sysOS' field in sysInfo dict.
 
         # job status
         logJob['jobStatus']['createTime'] = datetime.now()
